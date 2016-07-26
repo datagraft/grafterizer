@@ -10,7 +10,6 @@
 angular.module('grafterizerApp')
 .controller('PreviewCtrl', function(
             $scope,
-            ontotextAPI,
             PipeService,
             $timeout,
             $rootScope,
@@ -40,13 +39,7 @@ angular.module('grafterizerApp')
     }
   });
 
-  try {
-    $scope.selectedDistribution = $stateParams.distribution ?
-      window.atob($stateParams.distribution) : undefined;
-
-  } catch (e) {
-    $scope.distribution = null;
-  }
+  $scope.selectedDistribution = $stateParams.distributionId;
 
   $scope.totalNumberOfCalls = 0;
   var savedGeneratedClojure;
@@ -123,6 +116,7 @@ angular.module('grafterizerApp')
     }
   });
 
+  var fileSaved = false;
   $scope.$watch('transformation', function() {
     if ($scope.livePreview && $rootScope.transformation) {
       if ($rootScope.currentlyPreviewedFunction) {
@@ -137,7 +131,6 @@ angular.module('grafterizerApp')
     }
   }, true);
 
-  var fileSaved = false;
   $scope.$on('preview-request', function() {
     throttlePreview(false);
     fileSaved = true;

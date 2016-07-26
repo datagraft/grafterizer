@@ -13,18 +13,13 @@ angular.module('grafterizerApp')
     $rootScope,
     $mdDialog,
     $stateParams,
-    ontotextAPI,
+    backendService,
     PipeService,
     datagraftPostMessage,
     jarfterService,
     $sanitize) {
 
-    try {
-      $scope.distribution = $stateParams.distribution ?
-        window.atob($stateParams.distribution) : undefined;
-    } catch (e) {
-      $scope.distribution = null;
-    }
+    $scope.distribution = $stateParams.distributionId;
 
     $scope.transformation = $stateParams.id;
 
@@ -99,7 +94,7 @@ angular.module('grafterizerApp')
         });
     };
 
-    var showError = function(data) {
+    /*var showError = function(data) {
       $mdDialog.hide();
 
       var contentError = '';
@@ -119,9 +114,37 @@ angular.module('grafterizerApp')
           })
         );
       }, 500);
+    };*/
+
+    var executeAndSaveToQDS = function(accessUrl) {
+      PipeService.fillRDFrepo($scope.distribution, $scope.transformation, accessUrl).success(function(data) {
+        $scope.processing = false;
+        $scope.ugly();
+        $mdDialog.show(
+          $mdDialog.alert({
+            title: 'It\'s a success',
+            content: 'The data has correctly been save in the queriable data store.',
+            ok: 'Ok'
+          })
+        );
+      }).error(function() {
+        $scope.processing = false;
+      });
     };
 
-    $scope.makeNewDataset = function() {
+    $scope.executeAndSave = function() {
+      $scope.processing = true;
+
+      if ($scope.selectedQDS === 'new') {
+        $scope.processingStatus = 'Creating the Queriable Data Store';
+        // TODO check this
+        window.alert('Not implemented');
+      } else {
+        executeAndSaveToQDS($scope.selectedQDS);
+      }
+    };
+
+    /*$scope.makeNewDataset = function() {
 
       $scope.processing = true;
       $scope.processingStatus = 'Making the dataset';
@@ -215,7 +238,12 @@ angular.module('grafterizerApp')
                 }).error(showError);
             }).error(showError);
         }).error(showError);
-    };
+    };*/
+
+    // Load the queriable data stores from datagraft
+    backendService.queriableDataStores().success(function(data) {
+      $scope.QDSs = data['dcat:record'];
+    });
 
     $scope.cancel = function() {
       $mdDialog.cancel();

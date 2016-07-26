@@ -11,7 +11,7 @@ angular.module('grafterizerApp')
   .controller('TransformationCtrl', function(
               $scope,
                $stateParams,
-               ontotextAPI,
+               backendService,
                uploadFile,
                $rootScope,
                $state,
@@ -20,7 +20,6 @@ angular.module('grafterizerApp')
                transformationDataModel,
                generateClojure,
                $controller) {
-
 
   var customfunctions = [
     new transformationDataModel.CustomFunctionDeclaration(
@@ -48,7 +47,7 @@ angular.module('grafterizerApp')
       '(defn stringToNumeric    [x] (if (= "" x) nil  (if (.contains x ".") (Double/parseDouble x)(Integer/parseInt x))))',
       'CONVERT DATATYPE', 'Convert string to numeric'),
     new transformationDataModel.CustomFunctionDeclaration(
-      'string-literal', 
+      'string-literal',
       '(def string-literal s)',
       'CONVERT DATATYPE', 'Coerce to string'),
     new transformationDataModel.CustomFunctionDeclaration('boolean', '', 'CONVERT DATATYPE', 'Coerce to boolean'),
@@ -67,18 +66,18 @@ angular.module('grafterizerApp')
     new transformationDataModel.CustomFunctionDeclaration('second', '', 'COLLECTION', 'Returns the second item in the collection'),
     new transformationDataModel.CustomFunctionDeclaration('short', '', 'CONVERT DATATYPE', 'Coerce to short'),
     new transformationDataModel.CustomFunctionDeclaration(
-      'join',        
-      '(defn join [& strings] (clojure.string/join " " strings))', 
+      'join',
+      '(defn join [& strings] (clojure.string/join " " strings))',
       'STRING', 'Returns a string of all elements in the collection separated by space.'),
     new transformationDataModel.CustomFunctionDeclaration(
       'join-with',
-      '(defn join-with [sep] ( fn [& strings] (clojure.string/join sep strings)))', 
+      '(defn join-with [sep] ( fn [& strings] (clojure.string/join sep strings)))',
       'STRING', 'Returns a string of all elements in the collection separated by custom separator.'),
     new transformationDataModel.CustomFunctionDeclaration('lower-case', '', 'STRING', 'Converts string to all lower-case'),
     new transformationDataModel.CustomFunctionDeclaration('upper-case', '', 'STRING', 'Converts string to all upper-case'),
     new transformationDataModel.CustomFunctionDeclaration('reverse', '', 'STRING', 'Returns given string with its characters reversed'),
 /*    new transformationDataModel.CustomFunctionDeclaration(
-      'string-as-keyword', 
+      'string-as-keyword',
       '(defn string-as-keyword [s] ( when (seq s) (->   (str s) clojure.string/trim   (clojure.string/replace "(" "-") (clojure.string/replace ")" "") (clojure.string/replace " " "_") (clojure.string/replace "," "-") (clojure.string/replace "." "") (clojure.string/replace "/" "-") (clojure.string/replace "---" "-") (clojure.string/replace "--" "-") (clojure.string/replace ":" "") (clojure.string/replace "\\"" "") )))', 'STRING', 'Removes blanks and special symbols from a string thus making it possible to use it as a keyword'),*/
     new transformationDataModel.CustomFunctionDeclaration('remove-blanks', '(defn remove-blanks [s]  (when (seq s)  (clojure.string/replace s " " "")))', 'STRING', 'Removes blanks in a string'),
     new transformationDataModel.CustomFunctionDeclaration('titleize', '(defn titleize [st] (when (seq st) (let [a (clojure.string/split st (read-string "#\\" \\"")) c (map clojure.string/capitalize a)]  (->> c (interpose " ") (apply str) clojure.string/trim))))', 'STRING', 'Capitalizes each word in a string'),
@@ -120,8 +119,8 @@ angular.module('grafterizerApp')
       'convert-col-lat-long', 
       '(defn convert-col-lat-long [col hemisphere zoneNumber] (let [all-coords (re-seq (re-pattern "-?[0-9]{1,13}.[0-9]+") col)] (replace-several col (flatten (map (fn [coord-pair] (get-lat-long-strings-replacement (nth coord-pair 0) (nth coord-pair 1) hemisphere zoneNumber)) (partition 2 all-coords))))))', 
       'SERVICE',
-      'Convert coordinate pairs in a given cell by input hemisphere string ("N" or "S") and zone number (e.g., 32)'),
-       new transformationDataModel.CustomFunctionDeclaration('fill-when', '(defn fill-when [col] (grafter.sequences/fill-when col))', 'SERVICE','Takes a sequence of values and copies a value through the sequence depending on the supplied predicate function')
+      'Convert coordinate pairs in a given cell by input hemisphere string ("N" or "S") and zone number (e.g., 32)')
+
   );
   
   var predicatefunctions = [
@@ -152,7 +151,7 @@ angular.module('grafterizerApp')
       'zero?', '', 'PREDICATE', 'Returns true if argument is zero, else false')];
 
   var numericcustomfunctions = [new transformationDataModel.CustomFunctionDeclaration(
-    '+', '', 'NUMBER', ''),
+    ' +', '', 'NUMBER', ''),
                                 new transformationDataModel.CustomFunctionDeclaration(
                                   '-', '', 'NUMBER', ''),
                                 new transformationDataModel.CustomFunctionDeclaration(
@@ -163,6 +162,7 @@ angular.module('grafterizerApp')
   var allcustomfunctions = customfunctions.concat(predicatefunctions.concat(numericcustomfunctions));
 
   var id = $scope.id = $stateParams.id;
+  var publisher = $stateParams.publisher;
   $scope.document = {
     title: 'transformation loading',
     keywords: []
@@ -171,7 +171,7 @@ angular.module('grafterizerApp')
   $scope.loading = true;
   $rootScope.readonlymode = true;
 
-  ontotextAPI.transformation(id).success(function(data) {
+  backendService.transformation(publisher, id).success(function(data) {
     $scope.loading = false;
     $rootScope.readonlymode = $state.is('transformations.readonly');
     $scope.document = data;
@@ -198,23 +198,26 @@ angular.module('grafterizerApp')
     $scope.pipeline = pipeline;
   };
 
-  ontotextAPI.getJson(id).success(function(data) {
+  backendService.getTransformationJson(publisher, id).success(function(data) {
     var transformation;
     if (data.__type === 'Transformation') {
       transformation = transformationDataModel.Transformation.revive(
         data);
+
       // TODO: dirty but necessary for now
       var shownUpdateMessage = false;
-      angular.forEach(allcustomfunctions, function (expectedCFD) {
+      angular.forEach(allcustomfunctions, function(expectedCFD) {
         var foundCfd = false;
-        angular.forEach(transformation.customFunctionDeclarations, function (cfd) {
-          if(cfd.name == expectedCFD.name){
+        angular.forEach(transformation.customFunctionDeclarations, function(cfd) {
+          if (cfd.name === expectedCFD.name) {
+
             foundCfd = true;
           }
         });
-        if(!foundCfd){
+
+        if (!foundCfd) {
           transformation.addCustomFunctionDeclaration(expectedCFD.name, expectedCFD.clojureCode, expectedCFD.group, expectedCFD.docstring);
-          if(!shownUpdateMessage){
+          if (!shownUpdateMessage) {
             $mdToast.show(
               $mdToast.simple()
               .content('Auto-migrated transformation to latest version of Grafterizer. Please save to apply changes.')
@@ -226,7 +229,6 @@ angular.module('grafterizerApp')
         }
       });
 
-
     } else {
       $mdToast.show(
         $mdToast.simple()
@@ -236,6 +238,7 @@ angular.module('grafterizerApp')
       );
       return loadEmptyTransformation();
     }
+
     $scope.transformation = transformation;
     $rootScope.transformation = $scope.transformation;
     if (transformation.pipelines && transformation.pipelines.length) {
@@ -244,6 +247,13 @@ angular.module('grafterizerApp')
       $scope.pipeline = new transformationDataModel.Pipeline([]);
       transformation.pipelines = [$scope.pipeline];
     }
+  }).error(function() {
+      $mdToast.show(
+        $mdToast.simple()
+        .content('Transformation unfound in the save file')
+        .position('bottom left')
+        .hideDelay(6000)
+      );
   }).error(loadEmptyTransformation);
 
   $scope.$watch('fileUpload', function() {
@@ -265,8 +275,7 @@ angular.module('grafterizerApp')
 
       uploadFile.upload(file, function(data) {
         $state.go('transformations.transformation.preview', {
-          id: $stateParams.id,
-          distribution: data['@id']
+          distributionId: data.id
         });
       });
 
@@ -287,13 +296,6 @@ angular.module('grafterizerApp')
 
   $rootScope.actions = {
     save: function(noPreviewRequest) {
-      var update = angular.copy($scope.document);
-      update['dct:title'] = update.title;
-      update['dct:description'] = update.description;
-      update['dct:modified'] = moment().format('YYYY-MM-DD');
-      update['dcat:public'] = $scope.document['dct:public'] ? 'true' :
-      'false';
-
       var transformationType = 'pipe';
       var transformationCommand = 'my-pipe';
 
@@ -303,19 +305,26 @@ angular.module('grafterizerApp')
         transformationCommand = 'my-graft';
       }
 
-      update['dcat:transformationType'] = transformationType;
-      update['dcat:transformationCommand'] = transformationCommand;
-
-      delete update.title;
-      delete update.description;
-      delete update['dct:clojureDataID'];
-      delete update['dct:jsonDataID'];
-      delete update['dct:publisher'];
-
       var clojure = generateClojure.fromTransformation($scope.transformation);
 
-      ontotextAPI.updateTransformation(update, clojure, $scope.transformation)
-        .success(function() {
+      backendService.updateTransformation(publisher, id,
+      // Base information
+      {
+        name: $scope.document.title,
+        public: $scope.document['dct:public'] ? 'true' : 'false'
+      },
+      // Extra metadata
+      {
+        description: $scope.document.description,
+        'dcat:keyword': $scope.document.keywords
+      },
+      // Configuration
+      {
+        transformationType: transformationType,
+        transformationCommand: transformationCommand,
+        code: clojure,
+        extra: $scope.transformation
+      }).then(function() {
         if (!noPreviewRequest) {
           $scope.$broadcast('preview-request');
         }
@@ -332,7 +341,7 @@ angular.module('grafterizerApp')
       .targetEvent(ev);
 
       $mdDialog.show(confirm).then(function() {
-        ontotextAPI.deleteTransformation(id).success(function() {
+        backendService.deleteTransformation(publisher, id).success(function() {
           $state.go('transformations');
           $mdToast.show(
             $mdToast.simple()
@@ -346,37 +355,17 @@ angular.module('grafterizerApp')
     },
 
     fork: function(ev) {
-      var clojure = generateClojure.fromTransformation($scope.transformation);
-
-      var transformationType = 'pipe';
-      var transformationCommand = 'my-pipe';
-
-      if ($scope.transformation.graphs &&
-          $scope.transformation.graphs.length !== 0) {
-        transformationType = 'graft';
-        transformationCommand = 'my-graft';
-      }
-
-      ontotextAPI.newTransformation({
-        '@context': ontotextAPI.getContextDeclaration(),
-        '@type': 'dcat:Transformation',
-        'dct:title': $scope.document.title + '-fork',
-        'dct:description': $scope.document.description,
-        'dcat:public': $scope.document['dct:public'] ? 'true' : 'false',
-        'dct:modified': moment().format('YYYY-MM-DD'),
-        'dcat:keyword': $scope.document.keywords,
-        'dcat:transformationType': transformationType,
-        'dcat:transformationCommand': transformationCommand
-      }, clojure, $scope.transformation)
-        .success(function(data) {
+      backendService.forkTransformation(publisher, id).success(function(data) {
         $mdToast.show(
           $mdToast.simple()
           .content('Transformation forked')
           .position('bottom left')
           .hideDelay(6000)
         );
+
         $state.go('transformations.transformation', {
-          id: data['@id']
+          id: data.id,
+          publisher: data['foaf:publisher']
         });
       });
     },
@@ -439,8 +428,8 @@ angular.module('grafterizerApp')
       clickOutsideToClose: true
     }).then(function(distribution) {
       $state.go('transformations.transformation.preview', {
-        id: $stateParams.id,
-        distribution: distribution
+        // id: $stateParams.id,
+        distributionId: distribution.id
       });
     });
   };

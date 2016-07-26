@@ -9,24 +9,24 @@
  */
 angular.module('grafterizerApp')
   .controller('TransformationNewCtrl', function(
-              $scope,
-               $stateParams,
-               ontotextAPI,
-               uploadFile,
-               $rootScope,
-               $state,
-               $mdToast,
-               $mdDialog,
-               transformationDataModel,
-               generateClojure) {
+    $scope,
+    $stateParams,
+    backendService,
+    uploadFile,
+    $rootScope,
+    $state,
+    $mdToast,
+    $mdDialog,
+    transformationDataModel,
+    generateClojure) {
 
-  $scope.readonlymode = false;
+    $scope.readonlymode = false;
 
-  $scope.document = {
-    title: 'New transformation',
-    description: '',
-    keywords: []
-  };
+    $scope.document = {
+      title: 'New transformation',
+      description: '',
+      keywords: []
+    };
 
   var customfunctions = [
     new transformationDataModel.CustomFunctionDeclaration(
@@ -163,168 +163,176 @@ new transformationDataModel.CustomFunctionDeclaration('fill-when', '(defn fill-w
                                 new transformationDataModel.CustomFunctionDeclaration(
                                   '/', '', 'NUMBER', '')];
 
-  var allcustomfunctions = customfunctions.concat(predicatefunctions.concat(numericcustomfunctions));
+    var allcustomfunctions = customfunctions.concat(predicatefunctions.concat(numericcustomfunctions));
 
-  $scope.clojure = '';
-  //Initial functions: Make dataset with first row from header and rename columns as keywords to allow referring to them
-  var j;
-  for (j = 0; j < customfunctions.length; ++j)
-    if (customfunctions[j].name === 'keyword') break;
+    $scope.clojure = '';
+    //Initial functions: Make dataset with first row from header and rename columns as keywords to allow referring to them
+    var j;
+    for (j = 0; j < customfunctions.length; ++j)
+      if (customfunctions[j].name === 'keyword') break;
 
   $scope.pipeline = new transformationDataModel.Pipeline([]);
-  $scope.transformation = new transformationDataModel.Transformation(
-    allcustomfunctions, [], [$scope.pipeline], []);
-  $rootScope.transformation = $scope.transformation;
+    $scope.transformation = new transformationDataModel.Transformation(
+      allcustomfunctions, [], [$scope.pipeline], []);
+    $rootScope.transformation = $scope.transformation;
 
-  $rootScope.actions = {
-    save: function(distributionId) {
-      var clojure = generateClojure.fromTransformation($scope.transformation);
+    $rootScope.actions = {
+      save: function(distribution) {
+        var clojure = generateClojure.fromTransformation($scope.transformation);
 
-      var transformationType = 'pipe';
-      var transformationCommand = 'my-pipe';
+        var transformationType = 'pipe';
+        var transformationCommand = 'my-pipe';
 
-      if ($scope.transformation.graphs &&
+        if ($scope.transformation.graphs &&
           $scope.transformation.graphs.length !== 0) {
-        transformationType = 'graft';
-        transformationCommand = 'my-graft';
-      }
-
-      ontotextAPI.newTransformation({
-        '@context': ontotextAPI.getContextDeclaration(),
-        '@type': 'dcat:Transformation',
-        'dct:title': $scope.document.title,
-        'dct:description': $scope.document.description,
-        'dcat:public': $scope.document['dct:public'] ? 'true' : 'false',
-        'dct:modified': moment().format('YYYY-MM-DD'),
-        'dcat:transformationType': transformationType,
-        'dcat:transformationCommand': transformationCommand,
-        'dcat:keyword': $scope.document.keywords
-      }, clojure, $scope.transformation)
-        .success(function(data) {
-        $mdToast.show(
-          $mdToast.simple()
-          .content('Transformation saved')
-          .position('bottom left')
-          .hideDelay(6000)
-        );
-        if (distributionId) {
-          $state.go('transformations.transformation.preview', {
-            id: data['@id'],
-            distribution: distributionId
-          });
-        } else {
-          $state.go('transformations.transformation', {
-            id: data['@id']
-          });
+          transformationType = 'graft';
+          transformationCommand = 'my-graft';
         }
+
+        backendService.newTransformation(
+        // Base information
+        {
+          name: $scope.document.title,
+          public: $scope.document['dct:public'] ? 'true' : 'false'
+        },
+        // Extra metadata
+        {
+          description: $scope.document.description,
+          'dcat:keyword': $scope.document.keywords
+        },
+        // Configuration
+        {
+          transformationType: transformationType,
+          transformationCommand: transformationCommand,
+          code: clojure,
+          extra: $scope.transformation
+        }).then(function(data) {
+            $mdToast.show(
+              $mdToast.simple()
+              .content('Transformation saved')
+              .position('bottom left')
+              .hideDelay(6000)
+            );
+            if (distribution) {
+              $state.go('transformations.transformation.preview', {
+                id: data.id,
+                publisher: data.publisher,
+                distributionId: distribution.id
+              });
+            } else {
+              $state.go('transformations.transformation', {
+                id: data.id,
+                publisher: data.publisher
+              });
+            }
+          });
+      }
+    };
+
+    $scope.editPrefixers = function() {
+      $scope.originalPrefixers = [];
+      angular.copy($scope.transformation.prefixers, $scope.originalPrefixers);
+      $mdDialog.show({
+        templateUrl: 'views/editprefixes.html',
+        controller: 'EditprefixersCtrl',
+        scope: $scope.$new(false, $scope),
+        clickOutsideToClose: true
+      }).then(
+        function() {},
+
+        function() {
+          angular.copy($scope.originalPrefixers, $scope.transformation.prefixers);
+        });
+    };
+
+    $scope.editLibraries = function() {
+      $scope.originalLibraries = [];
+      angular.copy($scope.transformation.libraries, $scope.originalLibraries);
+      $mdDialog.show({
+        templateUrl: 'views/editlibraries.html',
+        controller: 'EditlibrariesCtrl',
+        scope: $scope.$new(false, $scope),
+        clickOutsideToClose: true
+      }).then(
+        function() {},
+
+        function() {
+          angular.copy($scope.originalLibraries, $scope.transformation.libraries);
+        });
+    };
+
+    $scope.editRDFPrefixes = function() {
+      $mdDialog.show({
+        templateUrl: 'views/MappingPrefixManage.html',
+        controller: 'MappingPrefixManageCtrl',
+        scope: $scope.$new(false, $scope),
+        clickOutsideToClose: true
       });
-    }
-  };
+    };
 
-  $scope.editPrefixers = function() {
-    $scope.originalPrefixers = [];
-    angular.copy($scope.transformation.prefixers, $scope.originalPrefixers);
-    $mdDialog.show({
-      templateUrl: 'views/editprefixes.html',
-      controller: 'EditprefixersCtrl',
-      scope: $scope.$new(false, $scope),
-      clickOutsideToClose: true
-    }).then(
-      function() {},
-
-      function() {
-        angular.copy($scope.originalPrefixers, $scope.transformation.prefixers);
+    $scope.validateMapping = function() {
+      $mdDialog.show({
+        templateUrl: 'views/validateMapping.html',
+        controller: 'validateMappingCtrl',
+        scope: $scope.$new(false, $scope),
+        clickOutsideToClose: true
       });
-  };
+    };
 
-  $scope.editLibraries = function() {
-    $scope.originalLibraries = [];
-    angular.copy($scope.transformation.libraries, $scope.originalLibraries);
-    $mdDialog.show({
-      templateUrl: 'views/editlibraries.html',
-      controller: 'EditlibrariesCtrl',
-      scope: $scope.$new(false, $scope),
-      clickOutsideToClose: true
-    }).then(
-      function() {},
+    $scope.defineCustomFunctions = function() {
+      $scope.originalCustomFunctionDeclarations = [];
+      angular.copy($scope.transformation.customFunctionDeclarations, $scope
+        .originalCustomFunctionDeclarations);
 
-      function() {
-        angular.copy($scope.originalLibraries, $scope.transformation.libraries);
+      $mdDialog.show({
+        templateUrl: 'views/createcustomfunction.html',
+        controller: 'CustomfunctionsdialogcontrollerCtrl',
+        scope: $scope.$new(false, $scope),
+        clickOutsideToClose: true
+      }).then(
+        function() {},
+
+        function() {
+          angular.copy($scope.originalCustomFunctionDeclarations, $scope.transformation
+            .customFunctionDeclarations);
+        });
+    };
+
+    $scope.defineStringCustomFunctions = function() {
+      $mdDialog.show({
+        templateUrl: 'views/createstringcustomfunction.html',
+        controller: 'CustomStringfunctionsdialogcontrollerCtrl',
+        scope: $scope.$new(false, $scope),
+        clickOutsideToClose: true
       });
-  };
+    };
 
-  $scope.editRDFPrefixes = function() {
-    $mdDialog.show({
-      templateUrl: 'views/MappingPrefixManage.html',
-      controller: 'MappingPrefixManageCtrl',
-      scope: $scope.$new(false, $scope),
-      clickOutsideToClose: true
+    $scope.$watch('fileUpload', function() {
+      if ($scope.fileUpload) {
+        var file = $scope.fileUpload;
+
+        uploadFile.upload(file, function(data) {
+          $rootScope.actions.save(data.id);
+        });
+      }
     });
-  };
 
-  $scope.validateMapping = function() {
-    $mdDialog.show({
-      templateUrl: 'views/validateMapping.html',
-      controller: 'validateMappingCtrl',
-      scope: $scope.$new(false, $scope),
-      clickOutsideToClose: true
-    });
-  };
-
-  $scope.defineCustomFunctions = function() {
-    $scope.originalCustomFunctionDeclarations = [];
-    angular.copy($scope.transformation.customFunctionDeclarations, $scope
-                 .originalCustomFunctionDeclarations);
-
-    $mdDialog.show({
-      templateUrl: 'views/createcustomfunction.html',
-      controller: 'CustomfunctionsdialogcontrollerCtrl',
-      scope: $scope.$new(false, $scope),
-      clickOutsideToClose: true
-    }).then(
-      function() {},
-
-      function() {
-        angular.copy($scope.originalCustomFunctionDeclarations, $scope.transformation
-                     .customFunctionDeclarations);
+    $scope.loadDistribution = function() {
+      $mdDialog.show({
+        templateUrl: 'views/loaddistribution.html',
+        controller: 'LoadDistributionCtrl',
+        scope: $scope.$new(false),
+        clickOutsideToClose: true
+      }).then(function(distribution) {
+        $rootScope.actions.save(distribution);
       });
-  };
+    };
 
-  $scope.defineStringCustomFunctions = function() {
-    $mdDialog.show({
-      templateUrl: 'views/createstringcustomfunction.html',
-      controller: 'CustomStringfunctionsdialogcontrollerCtrl',
-      scope: $scope.$new(false, $scope),
-      clickOutsideToClose: true
+    // Save the selected md-tab panel in session because we can
+    $scope.transformationSelectedTabIndex =
+      window.sessionStorage && window.sessionStorage.transformationSelectedTabIndex ?
+        (parseInt(window.sessionStorage.transformationSelectedTabIndex) || 0) : 0;
+    $scope.$watch('transformationSelectedTabIndex', function(newValue) {
+        window.sessionStorage.transformationSelectedTabIndex = newValue;
     });
-  };
-
-  $scope.$watch('fileUpload', function() {
-    if ($scope.fileUpload) {
-      var file = $scope.fileUpload;
-
-      uploadFile.upload(file, function(data) {
-        $rootScope.actions.save(data['@id']);
-      });
-    }
   });
-
-  $scope.loadDistribution = function() {
-    $mdDialog.show({
-      templateUrl: 'views/loaddistribution.html',
-      controller: 'LoadDistributionCtrl',
-      scope: $scope.$new(false),
-      clickOutsideToClose: true
-    }).then(function(distribution) {
-      $rootScope.actions.save(distribution);
-    });
-  };
-
-  // Save the selected md-tab panel in session because we can
-  $scope.transformationSelectedTabIndex =
-    window.sessionStorage && window.sessionStorage.transformationSelectedTabIndex ?
-    (parseInt(window.sessionStorage.transformationSelectedTabIndex) || 0) : 0;
-  $scope.$watch('transformationSelectedTabIndex', function(newValue) {
-    window.sessionStorage.transformationSelectedTabIndex = newValue;
-  });
-});

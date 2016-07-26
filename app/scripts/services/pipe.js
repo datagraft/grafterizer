@@ -18,14 +18,9 @@ angular.module('grafterizerApp')
       endpointCache = newEndpointCache;
     };
 
-    var apiAuthorization = '';
-
     this.$get = function($http, $log, $mdToast, $q, cfpLoadingBar, $mdDialog) {
 
       var api = {};
-      api.setAuthorization = function(keypass) {
-        apiAuthorization = 'Basic ' + window.btoa(keypass);
-      };
 
       var transformEdnResponse = function(data, headers) {
         try {
@@ -56,7 +51,11 @@ angular.module('grafterizerApp')
       var errorHandler = function(data, status, headers, config) {
         var message;
         if (data && data.error) {
-          message = 'API error: ' + data.error;
+          if (typeof data.error === 'string') {
+            message = 'API error: ' + data.error;
+          } else {
+            message = 'API error: ' + JSON.stringify(data.error);
+          }
         } else if (status) {
           message = 'Error ' + status + ' while contacting server';
         } else {
@@ -82,13 +81,11 @@ angular.module('grafterizerApp')
         });
       };
 
-      api.computeTuplesHref = function(distributionUri, transformationUri, type) {
-        return endpointRest + '/download?authorization=' +
-          window.encodeURIComponent(apiAuthorization) +
-          '&transformationUri=' +
-          window.encodeURIComponent(transformationUri) +
-          '&distributionUri=' + window.encodeURIComponent(distributionUri) +
-          '&type=' + (type ? window.encodeURIComponent(type) : 'pipe');
+      api.computeTuplesHref = function(distributionId, transformationId, type) {
+        return endpointRest + '/transform/' +
+          window.encodeURIComponent(distributionId) +
+          '/' + window.encodeURIComponent(transformationId) +
+          '?type=' + (type ? window.encodeURIComponent(type) : 'pipe');
       };
 
       var loadDataAsync = function(deferred, hash, nbIterations, justTheStatusPlease) {
@@ -149,21 +146,19 @@ angular.module('grafterizerApp')
         };
       };
 
-      var lastPreviewDuration = Number.MAX_VALUE;
+      var lastPreviewDuration = 60 * 1000 * 10; // 10 minutes
 
-      api.preview = function(distributionUri, clojure, page, pageSize) {
+      api.preview = function(distributionId, clojure, page, pageSize) {
         var deferred = $q.defer();
 
         var startTime = +new Date();
         $http({
-          url: endpointRest + '/preview',
+          url: endpointRest + '/preview/' + window.encodeURIComponent(distributionId),
           method: 'POST',
           headers: {
-            'Content-Type': 'application/json',
-            Authorization: apiAuthorization
+            'Content-Type': 'application/json'
           },
           data: {
-            distributionUri: distributionUri,
             clojure: clojure,
             page: page || 0,
             pageSize: pageSize || 100,
@@ -190,20 +185,19 @@ angular.module('grafterizerApp')
         return lastPreviewDuration;
       };
 
-      api.original = function(distributionUri, page, pageSize) {
+      api.original = function(distributionId, page, pageSize) {
         var deferred = $q.defer();
 
         $http({
-          url: endpointRest + '/original',
+          url: endpointRest + '/preview_original/' + window.encodeURIComponent(distributionId),
           method: 'GET',
           params: {
-            distributionUri: distributionUri,
             page: page || 0,
             pageSize: pageSize || 100,
             useCache: 1
           },
           headers: {
-            Authorization: apiAuthorization
+            // Authorization: apiAuthorization
           }
         }).error(errorHandler).error(function() {
           deferred.reject();
@@ -219,7 +213,7 @@ angular.module('grafterizerApp')
           url: endpointRest + '/download',
           method: 'GET',
           params: {
-            authorization: apiAuthorization,
+            // authorization: apiAuthorization,
             distributionUri: distributionUri,
             transformationUri: transformationUri,
             type: type || 'pipe',
@@ -234,8 +228,8 @@ angular.module('grafterizerApp')
           url: endpointRest + '/save',
           method: 'GET',
           params: {
-            datasetId: datasetId,
-            authorization: apiAuthorization,
+            datasetId: datasetId  ,
+            // authorization: apiAuthorization,
             distributionUri: distributionUri,
             transformationUri: transformationUri,
             type: type || 'pipe'
@@ -243,17 +237,19 @@ angular.module('grafterizerApp')
         });
       };
 
-      api.fillRDFrepo = function(distributionUri, repositoryUri) {
+      api.fillRDFrepo = function(distribution, transformation, queriableDataStore) {
         return $http({
           url: endpointRest + '/fillRDFrepo',
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            Authorization: apiAuthorization
+            // Authorization: apiAuthorization
           },
           data: {
-            distributionUri: distributionUri,
-            repositoryUri: repositoryUri
+            distribution: distribution,
+            transformation: transformation,
+            queriabledatastore: queriableDataStore,
+            ontotext: true
           }
         });
       };
