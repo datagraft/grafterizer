@@ -1,6 +1,6 @@
 node('linux'){
 	stage 'Build & Create new image'
-	git url: 'https://github.com/datagraft/grafterizer.git'
+	git url: 'https://github.com/datagraft/grafterizer.git', branch: 'develop'
 	sh 'npm install'
 	sh 'bower install'
 	sh 'grunt build'
