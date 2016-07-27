@@ -1,10 +1,10 @@
 node('linux'){
 	stage 'Build & Create new image'
-	git url:"https://github.com/taritaAna/grafterizer.git"
+	git url: 'https://github.com/datagraft/grafterizer.git'
 	sh 'npm install'
 	sh 'bower install'
 	sh 'grunt build'
-	sh 'docker build -t dapaas/grafterizer-web:latest .'
+	sh 'docker build -t datagraft/grafterizer:latest .'
 
 	stage 'Start containers & Test'
 	sh 'docker-compose up -d --force-recreate'
@@ -21,6 +21,6 @@ node('linux'){
 
 	stage 'Deploy'
 	//Temporary tag to deploy to non production dockerhub
-	sh 'docker tag dapaas/grafterizer-web:latest anavalery/grafterizer-web'
-	sh 'docker push anavalery/grafterizer-web'
+	sh 'docker tag datagraft/grafterizer:latest anavalery/grafterizer'
+	sh 'docker push anavalery/grafterizer'
 }
