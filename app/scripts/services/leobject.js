@@ -11,8 +11,8 @@ angular.module('grafterizerApp')
   .service('leObject', function() {
     this.object = {};
     this.serveraddress = window.location.origin === 'http://localhost:9000' ?
-      'https://grafterizer.datagraft.net/ManageVocabulary/api/vocabulary/'
-      : '/ManageVocabulary/api/vocabulary/';
+      'https://grafterizer.datagraft.net/vocabularies/api/vocabulary/'
+      : '/vocabularies/api/vocabulary/';
 
     //this.serveraddress = 'http://localhost:8080/VocabBackend/api/vocabulary/';
     this.validationOn = false;
