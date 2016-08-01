@@ -13,7 +13,7 @@ node('linux'){
 
 	try {
 		//Download and run startup script
-		sh 'curl -s https://raw.githubusercontent.com/datagraft/datagraft-platform/master/startup.sh |bash'
+		sh 'curl -s https://raw.githubusercontent.com/datagraft/datagraft-platform/master/startup.sh |bash -s oauth2clientid oauth2clientsecret http://localhost:8082/oauth/callback'
 		//Here is where tests are run, for now errors for static code analysis are swallowed
 		sh 'grunt check || exit 0'
 		sh 'grunt selenium'
