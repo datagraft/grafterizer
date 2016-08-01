@@ -5,7 +5,7 @@ var webdriver = require('selenium-webdriver'),
 var _ = require('underscore');
 var VARS = {};
 
-var globalTimeout = 60*1000;
+var globalTimeout = 90*1000;
 
 var driver = new webdriver.Builder()
     .forBrowser('phantomjs')
@@ -22,7 +22,7 @@ describe("Login", function() {
     });
 
     it("should log in", function() {
-        return driver.get("http://localhost:3003/").then(function() {
+        return driver.get("http://localhost:3000/").then(function() {
             return driver.findElement(By.linkText("Login")).click();
         }).then(function() {
             return driver.wait(function() {
@@ -35,11 +35,11 @@ describe("Login", function() {
         }).then(function() {
             return driver.findElement(By.id("user_email")).clear();
         }).then(function() {
-            return driver.findElement(By.id("user_email")).sendKeys("jenkins@datagraft.net");
+            return driver.findElement(By.id("user_email")).sendKeys("administrator@datagraft.net");
         }).then(function() {
             return driver.findElement(By.id("user_password")).clear();
         }).then(function() {
-            return driver.findElement(By.id("user_password")).sendKeys("SintefDatagraft12");
+            return driver.findElement(By.id("user_password")).sendKeys("password");
         }).then(function() {
             return driver.findElement(By.name("commit")).click();
         }).then(function() {
