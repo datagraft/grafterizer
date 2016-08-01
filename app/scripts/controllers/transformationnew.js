@@ -312,7 +312,7 @@ new transformationDataModel.CustomFunctionDeclaration('fill-when', '(defn fill-w
         var file = $scope.fileUpload;
 
         uploadFile.upload(file, function(data) {
-          $rootScope.actions.save(data.id);
+          $rootScope.actions.save(data);
         });
       }
     });

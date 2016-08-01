@@ -85,9 +85,9 @@ angular
       backendServiceProvider.setEndpoint(path + ':8082');
       PipeServiceProvider.setEndpoints(path + ':8082', path + ':8083');
     } else {
-      PipeServiceProvider.setEndpoints('/backend', '/cache');
+      PipeServiceProvider.setEndpoints('/grafterizer-dispatch', '/graftwerk-cache');
       jarfterServiceProvider.setEndpoint('');
-      backendServiceProvider.setEndpoint('/backend');
+      backendServiceProvider.setEndpoint('/grafterizer-dispatch');
     }
 
     $urlRouterProvider.otherwise('/transformations');
