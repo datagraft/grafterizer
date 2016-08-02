@@ -1,9 +1,13 @@
+'use strict'
 var webdriver = require('selenium-webdriver'),
     By = webdriver.By,
     until = webdriver.until,
     fs = require('fs');
 var _ = require('underscore');
 var VARS = {};
+
+const USERNAME='administrator';
+const LOGIN=USERNAME + "@datagraft.net";
 
 var globalTimeout = 90*1000;
 
@@ -35,7 +39,7 @@ describe("Login", function() {
         }).then(function() {
             return driver.findElement(By.id("user_email")).clear();
         }).then(function() {
-            return driver.findElement(By.id("user_email")).sendKeys("administrator@datagraft.net");
+            return driver.findElement(By.id("user_email")).sendKeys(LOGIN);
         }).then(function() {
             return driver.findElement(By.id("user_password")).clear();
         }).then(function() {
@@ -45,10 +49,24 @@ describe("Login", function() {
         }).then(function() {
             return driver.wait(function(){
                 return driver.findElement(By.css("nav.mdl-navigation > *:last-child")).getText().then(function (text) {
-                    return (_.isEqual(text, "jenkins"));
+                    return (_.isEqual(text, USERNAME));
                 });
             }, globalTimeout);
         });
+    });
+
+    afterEach(function () {
+        if (this.currentTest.state == 'failed') {
+            var that = this;
+            return driver.takeScreenshot().then(function (data) {
+                var testName = that.currentTest.title;
+                var fileName = "failure_" + testName.replace(/[^a-z0-9]/gi, '_')
+                                    .toLowerCase() + ".png";
+                fs.writeFileSync(fileName, data, 'base64');
+                console.log("Test '" + testName + "' failed. " +
+                            "Screenshot saved to " + fileName);
+            });
+        }
     });
 
     after(function() {
