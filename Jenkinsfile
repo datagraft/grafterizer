@@ -1,4 +1,4 @@
-node('linux'){
+node('swarm'){
 	stage 'Build & Create new image'
 	checkout scm
 	sh 'npm install'
