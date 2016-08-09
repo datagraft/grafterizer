@@ -1,0 +1,38 @@
+<md-dialog aria-label='Choose your input options' class="sin-function-dialog" flex="90">
+  <md-toolbar>
+    <div class="md-toolbar-tools">
+      <h2>Choose your input options</h2>
+    </div>
+  </md-toolbar>
+  <md-dialog-content layout="row">
+  <div layout="column">
+    <div layout="row">
+    <label>Function to filter with</label>
+    <md-input-container flex>
+
+     <md-select flex class="md-primary md-default-theme" style="top:10px"
+                 aria-label="File Type"
+                 placeholder="{{ selectedType }}"
+                 ng-model="selectedType">
+        <md-option ng-repeat="val in typeList" value={{val}}>{{val}}</md-option>
+      </md-select>
+    </md-input-container>
+    </div>
+    <div layout="row">
+      <label>Excel sheets</label>
+      <md-input-container flex>
+      <md-select flex class="md-primary md-default-theme"
+                 aria-label="File Type"
+                 onchange="changeSheet()"
+                 placeholder="{{ selectedSheet }}"
+                 ng-model="selectedSheet">
+        <md-option ng-repeat="val in sheetNames" value={{val}}>{{val}}</md-option>
+      </md-select>
+      </md-input-container>
+    </div>
+
+    <md-button class="md-raised" ng-click="uploadSelected()" aria-label="Add column" ng-disabled="$root.readonlymode">Upload</md-button>
+  </div>
+  </md-dialog-content>
+
+</md-dialog>

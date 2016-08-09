@@ -50,11 +50,11 @@ angular.module('grafterizerApp')
       return result.join("\n");
     }
     this.upload = function(file, finalCallback) {
-      prepare_upload_file(file, function(file_upload){
-        backendService.uploadDistribution(file_upload, {
-          title: 'Preview: ' + file_upload.name,
+      //prepare_upload_file(file, function(file_upload){
+        backendService.uploadDistribution(file, {
+          title: 'Preview: ' + file.name,
           description: 'File uploaded from Grafterizer in preview mode'
         }).success(finalCallback);
-      });
+      //});
     };
   });
