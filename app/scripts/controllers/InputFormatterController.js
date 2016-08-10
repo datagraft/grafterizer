@@ -1,5 +1,9 @@
 /**
- * Created by narmi on 8/8/2016.
+ * Created by datagraft-nive on 8/8/2016.
+ *
+ * The controller of inputformatter.html
+ * Handles different formats of tabular inputs and convert to CSV, using user inputs.
+ *
  */
 angular.module('grafterizerApp')
   .controller('InputFormatterControler', function ($scope, uploadFile, $state, $mdDialog) {
