@@ -26,7 +26,7 @@ describe("Login", function() {
     });
 
     it("should log in", function() {
-        return driver.get("http://localhost:55555/").then(function() {
+        return driver.get("http://"+ process.env.DATAGRAFT_HOST +":55555/").then(function() {
             return driver.findElement(By.linkText("Login")).click();
         }).then(function() {
             return driver.wait(function() {
