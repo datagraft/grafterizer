@@ -11,13 +11,14 @@ node('swarm'){
 	sh 'curl -sSL https://raw.githubusercontent.com/datagraft/datagraft-platform/master/docker-compose.yml > docker-compose.yml'
 
 	try {
+		sh 'docker-compose pull'		
 		sh 'docker-compose -p datagraft up -d --force-recreate'
 		//Download and run startup script
 		sh 'curl -sSL https://raw.githubusercontent.com/datagraft/datagraft-platform/master/startup.sh > startup.sh'
 		sh 'bash startup.sh oauth2clientid oauth2clientsecret http://localhost:55557/oauth/callback'
 		//Here is where tests are run, for now errors for static code analysis are swallowed
 		sh 'grunt check || exit 0'
-		sh 'grunt selenium'
+		sh 'DATAGRAFT_HOST=127.0.0.1 grunt selenium'
 	} finally {
 		// Tear down docker containers and remove volumes-- errors in this case will be swallowed
 		sh 'docker-compose -p datagraft down -v || exit 0'
@@ -25,7 +26,8 @@ node('swarm'){
 		sh 'rm -f startup.sh'
 	}
 
-	stage 'Deploy'
+	stage 'Publish'
+	prompt 'Do you want to publish image on hub?'
 	//Temporary tag to deploy to non production dockerhub
 	sh 'docker tag datagraft/grafterizer:latest anavalery/grafterizer'
 	sh 'docker push anavalery/grafterizer'
