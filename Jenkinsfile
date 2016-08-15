@@ -1,3 +1,4 @@
+#!groovy
 node('swarm'){
 	stage 'Build & Create new image'
 	checkout scm
@@ -26,11 +27,14 @@ node('swarm'){
 		sh 'rm -f startup.sh'
 	}
 
-	stage 'Publish'
-	prompt 'Do you want to publish image on hub?'
-	//Temporary tag to deploy to non production dockerhub
-	sh 'docker tag datagraft/grafterizer:latest anavalery/grafterizer'
-	sh 'docker push anavalery/grafterizer'
-	//Remove created image
-	sh 'docker rmi datagraft/grafterizer:latest'
+	if (env.BRANCH_NAME=="master") {
+		stage 'Publish'
+		timeout (time:30, unit:'MINUTES') {		
+			input 'Do you want to publish image on hub?'
+			sh 'docker push datagraft/grafterizer:latest'
+			//Remove created image
+			sh 'docker rmi datagraft/grafterizer:latest'
+		}	
+	}
+
 }
