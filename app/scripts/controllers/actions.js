@@ -2,6 +2,7 @@
 
 angular.module('grafterizerApp')
   .controller('ActionsCtrl', function($scope, $rootScope, $state) {
+    $scope.developmentMode = !!window.location.port;
 
     $rootScope.$watch('actions', function() {
       for (var key in $rootScope.actions) {
