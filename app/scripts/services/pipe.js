@@ -149,6 +149,7 @@ angular.module('grafterizerApp')
       var lastPreviewDuration = 60 * 1000 * 10; // 10 minutes
 
       api.preview = function(distributionId, clojure, page, pageSize) {
+         
         var deferred = $q.defer();
 
         var startTime = +new Date();

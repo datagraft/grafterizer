@@ -39,7 +39,7 @@
     <link rel="stylesheet" href="styles/main.css">
     <!-- endbuild -->
   </head>
-  <body layout="row">
+  <body layout="row" ng-class="{ toggle: $root.showFlags }" ng-cloak>
     <!--[if lt IE 9]>
       <p class="browsehappy">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> to improve your experience.</p>
     <![endif]-->
@@ -53,9 +53,9 @@
         </div>
        </md-toolbar>
 
-      <div id="mainview" flex layout="column" ui-view="main"></div>
+     <div ng-click="$root.showFlags = false" class="mainContainer" id="mainview" flex layout="column" ui-view="main"></div>
     </div>
-
+    <div class="flagContainer" feature-flag-overrides></div>   
     <!-- build:js(.) scripts/vendor.js -->
     <!-- bower:js -->
     <script src="bower_components/angular/angular.js"></script>
@@ -85,6 +85,7 @@
     <script src="bower_components/raven-js/dist/raven.js"></script>
     <script src="bower_components/angular-mocks/angular-mocks.js"></script>
     <script src="bower_components/oi.select/dist/select-tpls.min.js"></script>
+    <script src="bower_components/angular-feature-flags/dist/featureFlags.js"></script>
     <!-- endbower -->
     <!-- endbuild -->
     <!-- build:js(.) scripts/clojure.js -->
