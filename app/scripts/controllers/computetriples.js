@@ -18,19 +18,98 @@ angular.module('grafterizerApp')
     datagraftPostMessage,
     jarfterService,
     $sanitize) {
-
+ $scope.RDFformats = [
+            {
+                format: 'nt'
+                , description: 'N-Triples (.nt)'
+            }
+            
+            , {
+                format: 'rdf'
+                , description: 'RDF/XML (.rdf)'
+            }
+        
+            , {
+                format: 'ttl'
+                , description: 'Turtle (.ttl)'
+            }
+            
+            , {
+                format: 'nq'
+                , description: 'N-Quads (.nq)'
+            }
+            , {
+                format: 'n3'
+                , description: 'N3 (.n3)'
+            }
+            
+            , {
+                format: 'trix'
+                , description: 'TriX (.trix)'
+            }
+            , {
+                format: 'trig'
+                , description: 'TriG (.trig)'
+            },
+        ];
+        var filetypeFlag = false;
+    for (var i = 0; i < $rootScope.flags.length; ++i)
+            if ($rootScope.flags[i].key === "filetypeToggling") {
+                filetypeFlag = $rootScope.flags[i].active;
+                break;
+            }
+        console.log(filetypeFlag);
+    
     $scope.distribution = $stateParams.distributionId;
 
     $scope.transformation = $stateParams.id;
 
-    $scope.type = 'pipe';
+     if (!filetypeFlag) {
+            $scope.type = 'pipe';
+            if ($rootScope.transformation.graphs &&
+                $rootScope.transformation.graphs.length !== 0) {
+                $scope.type = 'graft';
+            }
+            $scope.downloadLink = PipeService.computeTuplesHref(
+                $scope.distribution, $scope.transformation, $scope.type);
+        } else {
+            $scope.type = 'pipe';
+            if (typeof $scope.outRDF === 'undefined') $scope.outRDF = false;   
+            $scope.downloadLink = PipeService.computeTuplesHref(
+                $scope.distribution, $scope.transformation, $scope.type, 'nt');
+            $scope.$watch('outRDF', function (value) {
+                $scope.outRDF = value;
+                if (value) {
+                    if ($rootScope.transformation.graphs &&
+                        $rootScope.transformation.graphs.length !== 0) {
+                        $scope.type = 'graft';
+                    }
+                }
+                   $scope.downloadLink = PipeService.computeTuplesHref(
+                    $scope.distribution, $scope.transformation, value ? $scope.type : 'pipe', 'nt');
+                console.log(value);
+                console.log($scope.type);
+            });
+            $scope.$watch('RDFformat', function (value) {
+                if ($scope.type == 'graft') {
+                var rdfFormat;
+                for (var i = 0; i < $scope.RDFformats.length; ++ i)
+                    if ($scope.RDFformats[i].description === value)
+                        rdfFormat = $scope.RDFformats[i].format;
+                    
+                $scope.downloadLink = PipeService.computeTuplesHref(
+                    $scope.distribution, $scope.transformation, value ? $scope.type : 'pipe', rdfFormat);
+                }
+            });
+        }
+ /* $scope.type = 'pipe';
     if ($rootScope.transformation.graphs &&
       $rootScope.transformation.graphs.length !== 0) {
       $scope.type = 'graft';
     }
 
     $scope.downloadLink = PipeService.computeTuplesHref(
-      $scope.distribution, $scope.transformation, $scope.type);
+      $scope.distribution, $scope.transformation, $scope.type);*/
 
     $scope.lastPreviewDuration = PipeService.getLastPreviewDuration();
     $scope.verySlowMode = $scope.lastPreviewDuration > 25000;
@@ -44,6 +123,7 @@ angular.module('grafterizerApp')
     };
 
     $scope.isRDF = $rootScope.transformation.graphs.length ? $rootScope.transformation.graphs.length : 0;
+    console.log($scope.isRDF);
     $scope.downloadJarEndpoint = jarfterService.getJarCreatorStandAloneEndpoint();
     $scope.transformEndpoint = jarfterService.getTransformStandAloneEndpoint();
 

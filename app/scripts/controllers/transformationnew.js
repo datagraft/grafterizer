@@ -119,19 +119,8 @@ angular.module('grafterizerApp')
       'SERVICE',
       'Replace several strings in another string based on a map of replacement pairs (used with "get-lat-long-strings-replacement" results to convert coordinates)'),
 
-   /* new transformationDataModel.CustomFunctionDeclaration(
-      'convert-col-lat-long', 
-      '(defn convert-col-lat-long [col hemisphere zoneNumber] (let [all-coords (re-seq (re-pattern "-?[0-9]{1,13}.[0-9]+") col)] (replace-several col (flatten (map (fn [coord-pair] (get-lat-long-strings-replacement (nth coord-pair 0) (nth coord-pair 1) hemisphere zoneNumber)) (partition 2 all-coords))))))', 
-      'SERVICE',
-      'Convert coordinate pairs in a given cell by input hemisphere string ("N" or "S") and zone number (e.g., 32)'),*/
-      new transformationDataModel.CustomFunctionDeclaration(
-      'convert-col-lat-long', 
-      '(defn convert-col-lat-long [col hemisphere zoneNumber] (let [all-coords (re-seq (re-pattern "-?[0-9.]+?(?=[, )])) col)] (replace-several col (flatten (map (fn [coord-pair] (get-lat-long-strings-replacement (nth coord-pair 0) (nth coord-pair 1) hemisphere zoneNumber)) (partition 2 all-coords))))))', 
-      'SERVICE',
-      'Convert coordinate pairs in a given cell by input hemisphere string ("N" or "S") and zone number (e.g., 32)'),
       
-new transformationDataModel.CustomFunctionDeclaration('fill-when', '(defn fill-when [col] (grafter.sequences/fill-when col))', 'SERVICE','Takes a sequence of values and copies a value through the sequence depending on the supplied predicate function')
-  );*/
+new transformationDataModel.CustomFunctionDeclaration('fill-when', '(defn fill-when [col] (grafter.sequences/fill-when col))', 'SERVICE','Takes a sequence of values and copies a value through the sequence depending on the supplied predicate function'),
 
         new transformationDataModel.CustomFunctionDeclaration(
       'convert-col-lat-long', 
