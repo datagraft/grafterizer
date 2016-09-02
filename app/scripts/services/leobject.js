@@ -10,7 +10,7 @@
 angular.module('grafterizerApp')
   .service('leObject', function() {
     this.object = {};
-    this.serveraddress = window.location.origin === 'http://localhost:8081' ?
+    this.serveraddress = window.location.origin === 'http://localhost:9000' ?
       'https://grafterizer.datagraft.net/vocabularies/api/vocabulary/'
       : '/vocabularies/api/vocabulary/';
 
