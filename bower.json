@@ -24,7 +24,7 @@
     "angular-messages": "1.5.8",
     "angular-recursion": "~1.0.5",
     "v-accordion": "~1.6.0",
-    "raven-js": "~3.6.1",
+    "raven-js": "~1.1.22",
     "oi.select": "~0.2.21",
     "angular-feature-flags": "1.4.0"
   },
