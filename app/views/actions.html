@@ -1,4 +1,10 @@
 <div layout="row" class="actions-view">
+     <div class="toggles" ng-click="showFlags=!showFlags">
+    <md-button class="md-icon-button" aria-label="Show flags" ng-click="$root.showFlags=!$root.showFlags" ng-show="developmentMode">
+        <i class="fa fa-toggle-on"></i>
+    <md-tooltip>Feature toggler</md-tooltip>
+    </md-button>
+        </div>  
 	<md-button class="md-icon-button" aria-label="Transform the data" ng-click="download()" ng-if="download">
 		<i class="fa fa-cogs"></i>
 		<md-tooltip>Transform data</md-tooltip>

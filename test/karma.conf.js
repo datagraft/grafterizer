@@ -46,6 +46,7 @@ module.exports = function(config) {
       'bower_components/raven-js/dist/raven.js',
       'bower_components/angular-mocks/angular-mocks.js',
       'bower_components/oi.select/dist/select-tpls.min.js',
+      'bower_components/angular-feature-flags/dist/featureFlags.js',
       // endbower
       'app/scripts/**/*.js',
       'test/mock/**/*.js',

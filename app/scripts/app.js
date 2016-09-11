@@ -37,7 +37,8 @@ angular
     'ngMessages',
     'RecursionHelper',
     'vAccordion',
-    'oi.select'
+    'oi.select',
+    'feature-flags'
 ])
   .config(function(
     backendServiceProvider,
@@ -307,10 +308,11 @@ angular
 
     // Enable credentials with the API communication
     $httpProvider.defaults.withCredentials = true;
-  }).run(function(datagraftPostMessage, $state, $rootScope) {
+  }).run(function(datagraftPostMessage, $state, $rootScope, featureFlags, $http) {
     datagraftPostMessage.setup();
 
     // Mobile detection (as Leaflet 1.0 does)
     var ua = navigator.userAgent.toLowerCase();
     $rootScope.isMobile = typeof orientation !== 'undefined' || ua.indexOf('mobile') !== -1;
+    featureFlags.set($http.get('/features/flags.json'));
   });
