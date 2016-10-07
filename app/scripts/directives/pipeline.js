@@ -20,6 +20,10 @@ angular.module('grafterizerApp')
       // if (!scope.pipeline) {
       //scope.pipeline = new transformationDataModel.Pipeline([]);
       // }
+      scope.hideUploadDatasetFunction = function(funct)
+      {
+        return funct.name =="upload-dataset" ? true : false;
+      }
 
       scope.clickAddAfter = function(funct) {
         var newScope = scope.$new(false, scope);
@@ -70,9 +74,9 @@ angular.module('grafterizerApp')
           scope.pipeline.remove(funct);
         });
       };
-      
+
       scope.previewUntilStep = function(funct) {
-        
+
         angular.forEach(scope.pipeline.functions, function(f) {
           f.fabIsOpen = false;
           f.leaveFabOpen = false;
@@ -87,14 +91,14 @@ angular.module('grafterizerApp')
           $rootScope.currentlyPreviewedFunction = funct;
           funct.isPreviewed = true;
           var partialTransformation = scope.transformation.getPartialTransformation(funct);
-          
+
           // TODO maybe it is better not to use a "global" variable
           $rootScope.previewedClojure = generateClojure.fromTransformation(partialTransformation);
         }
       };
 
       scope.closePreviewOfFunction = function() {
-        
+
         angular.forEach(scope.pipeline.functions, function(f) {
           f.leaveFabOpen = false;
         });

@@ -271,8 +271,11 @@ angular.module('grafterizerApp')
         return;
       }
 
-
-      var file = $scope.fileUpload;
+      var callback = function (data) {
+        $state.go('transformations.transformation.preview', {
+          distributionId: data.id
+        });
+      };
 
       $mdDialog.show({
         templateUrl: 'views/inputformatter.html',
@@ -280,9 +283,11 @@ angular.module('grafterizerApp')
         scope: $scope.$new(false, $scope),
         uploadFile: uploadFile,
         state: $state,
-        clickOutsideToClose: true
+        transformationDataModel: transformationDataModel,
+        rootScope: $rootScope,
+        callback: callback,
+        clickOutsideToClose: false
       });
-
     }
   });
 

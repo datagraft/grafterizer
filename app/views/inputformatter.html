@@ -6,6 +6,26 @@
   </md-toolbar>
   <md-dialog-content class="sticky-container" >
     <div layout="column">
+
+      <div>
+        <show-hide-documentation show-usage="showUsage"></show-hide-documentation>
+        <div class="md-padding" class="api-doc-docstring" ng-show="showUsage" layout="column">
+          <p>
+            Create a dataset by choosing basic file format and other input parameters.
+            </br>
+            </br>
+            If the input is a Delimiter-Separated-File, enter the single charactor delimiter in 'Delimiter' field.
+            </br>
+            For Tab-Separated files(tsv), write 't' or 'tab'.
+            </br>
+            </br>
+            If the input is an Excel SpreadSheet, choose the sheetname you want to process.
+            </br>
+            Press 'Upload' to proceed with the transformation.
+          </p>
+
+          <hr></div>
+      </div>
       <!--File type chooser-->
       <div layout="column" class="md-padding">
         <label>File category</label>
