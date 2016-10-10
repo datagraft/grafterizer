@@ -160,14 +160,16 @@ angular.module('grafterizerApp')
 
         var currentOriginalPage = 0;
         $scope.loadOriginalData = function () {
-            if ($scope.originalData) return;
-
-            if ($scope.selectedDistribution) {
-                PipeService.original($scope.selectedDistribution, 0, paginationSize)
-                    .then(function (data) {
-                        $scope.originalData = data;
-                    });
-            }
+          if ($scope.originalData) return;
+          var uploadDatasetFunction = _.get($scope.$parent.transformation, 'pipelines[0].functions[0]'); // original data is created out of read-dataset
+          if (!uploadDatasetFunction) return;
+          var clojure = '(def make-graph (graph-fn [{:keys []}])) (defpipe my-pipe [data-file] (-> ' + uploadDatasetFunction.generateClojure().ednEncode() + '))';
+          if ($scope.selectedDistribution) {
+            PipeService.preview($scope.selectedDistribution, clojure, 0, paginationSize)
+              .then(function (data) {
+                $scope.originalData = data;
+              });
+          }
         };
 
         $scope.loadMorePreview = function (callback) {
@@ -189,20 +191,22 @@ angular.module('grafterizerApp')
         };
 
         $scope.loadMoreOriginal = function (callback) {
-            if ($scope.selectedDistribution) {
-                PipeService.original($scope.selectedDistribution, ++currentOriginalPage, paginationSize)
-                    .then(function (data) {
-                            if (data && data.edn) {
-                                callback(undefined, data.edn);
-                            } else {
-                                callback(true);
-                            }
-                        },
-
-                        function () {
-                            callback(true);
-                        });
-            }
+          if ($scope.selectedDistribution) {
+            var uploadDatasetFunction = _.get($scope.$parent.transformation, 'pipelines[0].functions[0]'); // original data is created out of read-dataset
+            if (!uploadDatasetFunction) return;
+            var clojure = '(def make-graph (graph-fn [{:keys []}])) (defpipe my-pipe [data-file] (-> ' + uploadDatasetFunction.generateClojure().ednEncode() + '))';
+            PipeService.preview($scope.selectedDistribution, clojure, ++currentOriginalPage, paginationSize)
+              .then(function (data) {
+                  if (data && data.edn) {
+                    callback(undefined, data.edn);
+                  } else {
+                    callback(true);
+                  }
+                },
+                function () {
+                  callback(true);
+                });
+          }
         };
 
     });

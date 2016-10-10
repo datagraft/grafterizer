@@ -128,6 +128,12 @@ angular.module('grafterizerApp')
             name: 'grep',
             selected: false,
             type: 'rows'
+          },
+          {
+            displayName: 'Upload-dataset',
+            name: 'upload-dataset',
+            selected: false,
+            type: 'none'
           }
         ];
 
