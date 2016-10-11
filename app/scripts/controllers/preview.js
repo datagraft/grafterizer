@@ -160,7 +160,7 @@ angular.module('grafterizerApp')
 
         var currentOriginalPage = 0;
         $scope.loadOriginalData = function () {
-          if ($scope.originalData) return;
+          //if ($scope.originalData) return;
           var uploadDatasetFunction = _.get($scope.$parent.transformation, 'pipelines[0].functions[0]'); // original data is created out of read-dataset
           if (!uploadDatasetFunction) return;
           var clojure = '(def make-graph (graph-fn [{:keys []}])) (defpipe my-pipe [data-file] (-> ' + uploadDatasetFunction.generateClojure().ednEncode() + '))';

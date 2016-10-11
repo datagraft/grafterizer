@@ -28,7 +28,7 @@ angular.module('grafterizerApp')
             $scope.sheetNames,
             $scope.selectedSheet,
             $scope.extension,
-            'upload-data');
+            'Reads the input data for the data transformation. \n Cannot be moved or removed');
         $rootScope.transformation = $scope.transformation;
         uploadProcessedFile($scope.$parent.fileUpload);
         $mdDialog.hide();

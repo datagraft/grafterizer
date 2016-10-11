@@ -653,7 +653,9 @@ angular.module('grafterizerApp')
 
     this.__type = 'UploadDatasetFunction';
     if (!docstring) {
-      this.docstring = 'Upload dataset: ';
+      this.docstring = 'Reads the input data for the data transformation \n Cannot be moved or removed';
+    } else{
+      this.docstring = docstring;
     }
 
   };

@@ -130,7 +130,7 @@ angular.module('grafterizerApp')
             type: 'rows'
           },
           {
-            displayName: 'Upload-dataset',
+            displayName: 'Reads the input data for the data transformation. \n Cannot be moved or removed',
             name: 'upload-dataset',
             selected: false,
             type: 'none'
