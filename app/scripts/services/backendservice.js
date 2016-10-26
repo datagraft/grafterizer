@@ -139,17 +139,17 @@ angular.module('grafterizerApp')
     };
 
     api.dataDistributions = function() {
-      return $http.get(endpoint + '/myassets/data_distributions').error(errorHandler);
+      return $http.get(endpoint + '/myassets/filestores').error(errorHandler);
     };
 
     api.uploadDistribution = function(file, metadata) {
       return Upload.upload({
-        url: endpoint + '/myassets/data_distributions',
+        url: endpoint + '/myassets/filestores',
         method: 'POST',
         data: {
-          'data_distribution[name]': metadata.title,
-          'data_distribution[description]': metadata.description,
-          'data_distribution[file]': file
+          'filestore[name]': metadata.title,
+          'filestore[description]': metadata.description,
+          'filestore[file]': file
         }
       }).error(errorHandler);
     };
