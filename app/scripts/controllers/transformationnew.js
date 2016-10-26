@@ -22,8 +22,89 @@ angular.module('grafterizerApp')
 
     $scope.readonlymode = false;
 
+    // This list is from Docker <3
+    // https://github.com/docker/docker/blob/master/pkg/namesgenerator/names-generator.go
+    // While it's funny
+    // It also improves the user experience, because it gives more originality in a list
+    // of boring "new transformation".
+    // It might also force the user to think about the transformation name, and eventually
+    // convince him to rename its transformation
+    // Basically, this is the best idea ever.
+    var listOfFunnyAdjectives = [
+      "admiring",
+      "adoring",
+      "affectionate",
+      "agitated",
+      "amazing",
+      "angry",
+      "awesome",
+      "backstabbing",
+      "berserk",
+      "big",
+      "boring",
+      "clever",
+      "cocky",
+      "compassionate",
+      "condescending",
+      "cranky",
+      "desperate",
+      "determined",
+      "distracted",
+      "dreamy",
+      "drunk",
+      "eager",
+      "ecstatic",
+      "elastic",
+      "elated",
+      "elegant",
+      "evil",
+      "fervent",
+      "focused",
+      "furious",
+      "gigantic",
+      "gloomy",
+      "goofy",
+      "grave",
+      "happy",
+      "high",
+      "hopeful",
+      "hungry",
+      "infallible",
+      "jolly",
+      "jovial",
+      "kickass",
+      "lonely",
+      "loving",
+      "mad",
+      "modest",
+      "naughty",
+      "nauseous",
+      "nostalgic",
+      "peaceful",
+      "pedantic",
+      "pensive",
+      "prickly",
+      "reverent",
+      "romantic",
+      "sad",
+      "serene",
+      "sharp",
+      "sick",
+      "silly",
+      "sleepy",
+      "small",
+      "stoic",
+      "stupefied",
+      "suspicious",
+      "tender",
+      "thirsty",
+      "tiny",
+      "trusting",
+      "zen",
+    ];
+
     $scope.document = {
-      title: 'New transformation',
+      title: 'New ' + listOfFunnyAdjectives[Math.floor(Math.random() * listOfFunnyAdjectives.length)] + ' transformation',
       description: '',
       keywords: []
     };
