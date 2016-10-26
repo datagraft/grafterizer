@@ -15,7 +15,7 @@ angular.module('grafterizerApp')
     endpoint = newEndpoint;
   };
 
-  this.$get = function($http, $mdToast, Upload, $log, $state, $q) {
+  this.$get = function($http, $mdToast, $mdDialog, Upload, $log, $state, $q) {
     var api = {};
 
     var errorHandler = function(data, status, headers, config) {
@@ -100,7 +100,16 @@ angular.module('grafterizerApp')
           errorHandler(data, status, headers, config);
           d.reject();
         });
-      }).error(errorHandler).error(function() {
+      }).error(errorHandler).error(function(data, status) {
+        if (status === 422) {
+          $mdDialog.show(
+            $mdDialog.alert({
+              title: 'Unable to save the transformation',
+              content: 'The server doesn\'t accept it. Please check that the transformation title isn\'t a reserved keyword.',
+              ok: 'Alright'
+            })
+          );
+        }
         d.reject();
       });
       return d.promise;
