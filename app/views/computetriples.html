@@ -7,7 +7,7 @@
     <md-dialog-content layout="row" layout-sm="column" class="sticky-container" layout-align="center">
         <div class="md-padding" flex-gt-sm="33" layout="column" ng-show="distribution">
                 <h4 class="md-title">Execute and save</h4>
-             <p class="md-caption">Execute the transformation on the dataset and save the results in a queriable datastore. This may take a few minutes.</p>
+             <p class="md-caption">Execute the transformation on the dataset and save the results in an existing  sparql endpoint. This may take a few minutes.</p>
             <md-progress-circular style="margin: 30px auto 0px auto;" ng-if="processing" md-mode="indeterminate"></md-progress-circular>
             <p class="processing-status" ng-show="processingStatus">{{processingStatus}}</p>
             <form name="executeAndSaveForm" ng-submit="executeAndSave()" ng-hide="processing" layout="column" layout-align="center center">
@@ -38,7 +38,7 @@
                 <p class="slow-mode-warning" ng-if="verySlowMode">
                     <i class="fa fa-exclamation-triangle"></i>
 
-                    Datapage creation is not supported for transformation that take longer than 25 seconds. You can however download the results or the transformation executable.
+                    Transformations that take longer than 25 seconds are not supported. You can however download the results or the transformation executable.
                 </p>
             </form>
         </div>

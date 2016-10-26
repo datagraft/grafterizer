@@ -191,4 +191,28 @@ angular.module('grafterizerApp')
     }
   };
 
+  // If it's an upwizards distribution, it means grafterizer is used
+  // inside the Datagraft widget, and therefore, should provide the next step
+  // mechanism
+  var upwizardExtractIDRegex = /^upwizards--(\d+)$/;
+  var matchUpwizardId = $scope.selectedDistribution.match(upwizardExtractIDRegex);
+
+  if (matchUpwizardId) {
+    $rootScope.$emit('addAction', {
+      name: 'nextstep',
+      callback: function(){
+        $mdDialog.show({
+          templateUrl: 'views/filldatagraftwizard.html',
+          controller: 'FillDatagraftWizard',
+          scope: $scope.$new(false),
+          clickOutsideToClose: true
+        });
+      }
+    });
+
+    $scope.$on('$destroy', function() {
+      $rootScope.$emit('removeAction', 'nextstep');
+    });
+  }
+
 });
