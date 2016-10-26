@@ -116,7 +116,7 @@ angular.module('grafterizerApp')
       }, 500);
     };*/
 
-    var executeAndSaveToQDS = function(accessUrl) {
+    var executeAndSaveToSparqlEndpoint = function(accessUrl) {
       PipeService.fillRDFrepo($scope.distribution, $scope.transformation, accessUrl).success(function(data) {
         $scope.processing = false;
         $scope.ugly();
@@ -135,13 +135,13 @@ angular.module('grafterizerApp')
     $scope.executeAndSave = function() {
       $scope.processing = true;
 
-      if ($scope.selectedQDS === 'new') {
-        $scope.processingStatus = 'Creating the Queriable Data Store';
-        // TODO check this
-        window.alert('Not implemented');
-      } else {
-        executeAndSaveToQDS($scope.selectedQDS);
-      }
+      // if ($scope.selectedSparqlEndpoint === 'new') {
+      //   $scope.processingStatus = 'Creating the Queriable Data Store';
+      //   // TODO check this
+      //   window.alert('Not implemented');
+      // } else {
+        executeAndSaveToSparqlEndpoint($scope.selectedSparqlEndpoint);
+      // }
     };
 
     /*$scope.makeNewDataset = function() {
@@ -240,9 +240,9 @@ angular.module('grafterizerApp')
         }).error(showError);
     };*/
 
-    // Load the queriable data stores from datagraft
-    backendService.queriableDataStores().success(function(data) {
-      $scope.QDSs = data['dcat:record'];
+    // Load the sparql endpoints from datagraft
+    backendService.sparqlEndpoints().success(function(data) {
+      $scope.sparqlEndpoints = data['dcat:record'];
     });
 
     $scope.cancel = function() {

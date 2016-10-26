@@ -158,6 +158,10 @@ angular.module('grafterizerApp')
       return $http.get(endpoint + '/myassets/queriable_data_stores').error(errorHandler);
     };
 
+    api.sparqlEndpoints = function() {
+      return $http.get(endpoint + '/myassets/sparql_endpoints').error(errorHandler);
+    };
+
     return api;
   };
 });
