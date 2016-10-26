@@ -166,6 +166,12 @@ angular
           label: '{{document.title || "New transformation"}}'
         }
       })
+      .state('transformations.new.preview', {
+        url: '/preview/:distributionId',
+        ncyBreadcrumb: {
+          label: 'Creating transformation, please wait'
+        }
+      })
       .state('transformations.transformation', {
         url: '/:publisher/:id',
         views: {

@@ -416,4 +416,13 @@ new transformationDataModel.CustomFunctionDeclaration('fill-when', '(defn fill-w
     $scope.$watch('transformationSelectedTabIndex', function(newValue) {
         window.sessionStorage.transformationSelectedTabIndex = newValue;
     });
+
+    // If the state is a preview state, it means that we should preview
+    // a distribution. It also mean that we must save the transformation ASAP
+    // and directly go to the normal preview step
+    if ($state.is('transformations.new.preview')) {
+      $rootScope.actions.save({
+        id: $state.params.distributionId
+      });
+    }
   });
