@@ -258,12 +258,14 @@ angular.module('grafterizerApp')
 
   $scope.$watch('fileUpload', function() {
     if ($scope.fileUpload) {
-      if ($rootScope.readonlymode) {
+      if ($rootScope.readonlymode || $rootScope.upwizardMode) {
         $mdToast.show(
           $mdToast.simple()
           .content($scope.loading ?
                    'Please wait the transformation loading before uploading files' :
-                   'File upload is disabled in readonly mode')
+                   ($rootScope.upwizardMode ?
+                    'File upload is disabled when using Datagraft\'s wizard' :
+                    'File upload is disabled in readonly mode'))
           .position('bottom left')
           .hideDelay(6000)
         );

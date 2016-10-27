@@ -17,7 +17,7 @@ angular.module('grafterizerApp')
     datagraftPostMessage) {
 
     $scope.processing = false;
-    $scope.mapRDF = $rootScope.transformation.graphs && $rootScope.transformation.graphs.length !== 0;
+    $scope.mapRDF = $scope.showMapRDFButton = $rootScope.transformation.graphs && $rootScope.transformation.graphs.length !== 0;
 
     $scope.cancel = function() {
       $mdDialog.cancel();
@@ -54,6 +54,10 @@ angular.module('grafterizerApp')
                 ok: 'Sure'
               })
             );
+          } else {
+            var location = '/myassets/upwizards/fill_sparql_endpoint/'+matchUpwizardId[1];
+            datagraftPostMessage.setLocation(location);
+            $mdDialog.cancel();
           }
         }).error(function() {
           $scope.processing = false;

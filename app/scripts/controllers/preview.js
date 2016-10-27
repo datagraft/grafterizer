@@ -198,21 +198,28 @@ angular.module('grafterizerApp')
   var matchUpwizardId = $scope.selectedDistribution.match(upwizardExtractIDRegex);
 
   if (matchUpwizardId) {
-    $rootScope.$emit('addAction', {
-      name: 'nextstep',
-      callback: function(){
-        $mdDialog.show({
-          templateUrl: 'views/filldatagraftwizard.html',
-          controller: 'FillDatagraftWizard',
-          scope: $scope.$new(false),
-          clickOutsideToClose: true
-        });
-      }
-    });
+    $rootScope.hideToolbar = true;
+    $rootScope.upwizardMode = true;
 
-    $scope.$on('$destroy', function() {
-      $rootScope.$emit('removeAction', 'nextstep');
-    });
+    $scope.nextWizardStep = function(){
+      if ($rootScope.actions && $rootScope.actions.save) {
+        // Save but without a preview
+        $rootScope.actions.save(true);
+      }
+
+      $mdDialog.show({
+        templateUrl: 'views/filldatagraftwizard.html',
+        controller: 'FillDatagraftWizard',
+        scope: $scope.$new(false),
+        clickOutsideToClose: true
+      });
+    };
+    $scope.download = function() {
+      $rootScope.actions.download();
+    };
+    $scope.save = function() {
+      $rootScope.actions.save();
+    };
   }
 
 });

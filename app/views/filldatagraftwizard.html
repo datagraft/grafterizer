@@ -2,7 +2,7 @@
   <md-dialog-content style="margin: 40px auto 0px auto;" layout="row" layout-sm="column" class="sticky-container" layout-align="center center">
     <div ng-if="!processing" layout="column" layout-align="center center">
       <p class="md-caption">
-        <div layout="row" layout-align="center">
+        <div layout="row" layout-align="center" ng-show="showMapRDFButton">
           <a class="sin-left-label-switch" href="" ng-click="mapRDF=!mapRDF">CSV</a>
           <md-switch aria-label="Map the tabular data to RDF" ng-model="mapRDF">
            RDF

@@ -83,9 +83,9 @@
     <resize-hand for="transformationTabs" ng-if="showPreview"></resize-hand>
 </md-content>
 
-<md-fab-speed-dial class="md-fling md-fab-bottom-right" md-direction="left" ng-hide="readonlymode">
+<md-fab-speed-dial class="md-fling md-fab-bottom-right" md-direction="left" ng-hide="readonlymode" ng-if="!upwizardMode">
     <md-fab-trigger>
-        <md-button aria-label="Open file" class="md-fab md-accent sin-fa-button" id="prout">
+        <md-button aria-label="Open file" class="md-fab md-accent sin-fa-button">
             <i class="fa fa-folder-open-o"></i>
         </md-button>
     </md-fab-trigger>

@@ -768,6 +768,14 @@ preview-table.with-bottom-switch {
   bottom: 84px;
 }
 
+.bottom-table-container {
+  position: absolute;
+  bottom: 20px;
+  left: 26px;
+  right: 20px;
+  background: white;
+  border-radius: 10px;
+}
 .live-preview-switch {
   position: absolute;
   bottom: 26px;
@@ -1019,14 +1027,14 @@ md-toolbar .md-button[type=submit] {
   }
 }
 
-.md-button.md-icon-button.sin-highlighted-toolbar-button {
+/*.md-button.md-icon-button.sin-highlighted-toolbar-button {
   width: auto;
   font-size: 22px;
   padding-right: 8px;
   color: #FF609A;
-  text-shadow: 0px 0px 8px #FF609A;
+  // text-shadow: 0px 0px 8px #FF609A;
   border-radius: 9px;
-}
+}*/
 
 .sin-left-label-switch {
   margin-top:15px;
