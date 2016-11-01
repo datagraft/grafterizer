@@ -32,11 +32,11 @@ angular.module('grafterizerApp')
       'DATE FUNCTIONS', 'Transform date dd/mm/yyyy ~> yyyy-mm-dd'),
     new transformationDataModel.CustomFunctionDeclaration(
       'double-literal',
-      '(defn double-literal [s] (if (nil? (re-matches #"[0-9.]+" s)) 0 (Double/parseDouble s)))', 
+      '(defn double-literal [s] (if (nil? (re-matches #"[0-9.]+" s)) 0 (Double/parseDouble s)))',
       'CONVERT DATATYPE', 'Coerce to double. Null and non-valid values are replaced with zero'),
     new transformationDataModel.CustomFunctionDeclaration(
       'integer-literal',
-      '(defn integer-literal [s] (if (nil? (re-matches #"[0-9.]+" s)) 0 (Integer/parseInt s)))', 
+      '(defn integer-literal [s] (if (nil? (re-matches #"[0-9.]+" s)) 0 (Integer/parseInt s)))',
       'CONVERT DATATYPE', 'Coerce to integer. Null and non-valid values are replaced with zero'),
     new transformationDataModel.CustomFunctionDeclaration(
       'transform-gender',
@@ -104,25 +104,25 @@ angular.module('grafterizerApp')
 
   customfunctions.push(
     new transformationDataModel.CustomFunctionDeclaration(
-      'get-lat-long-strings-replacement', 
-      '(defn get-lat-long-strings-replacement [easting northing hemisphere zoneNumber] (let [utmCoords (. gov.nasa.worldwind.geom.coords.UTMCoord fromUTM (Integer/parseInt zoneNumber) (if (= hemisphere "N") "gov.nasa.worldwind.avkey.North" (if (= hemisphere "S") "gov.nasa.worldwind.avkey.East" (throw (Exception. "Wrong hemisphere input")))) (Double/parseDouble easting) (Double/parseDouble northing))] (vector (re-pattern easting) (str (.getDegrees (.getLongitude utmCoords))) (re-pattern northing) (str (.getDegrees (.getLatitude utmCoords))))))', 
-      'SERVICE', 
+      'get-lat-long-strings-replacement',
+      '(defn get-lat-long-strings-replacement [easting northing hemisphere zoneNumber] (let [utmCoords (. gov.nasa.worldwind.geom.coords.UTMCoord fromUTM (Integer/parseInt zoneNumber) (if (= hemisphere "N") "gov.nasa.worldwind.avkey.North" (if (= hemisphere "S") "gov.nasa.worldwind.avkey.East" (throw (Exception. "Wrong hemisphere input")))) (Double/parseDouble easting) (Double/parseDouble northing))] (vector (re-pattern easting) (str (.getDegrees (.getLongitude utmCoords))) (re-pattern northing) (str (.getDegrees (.getLatitude utmCoords))))))',
+      'SERVICE',
       'Produces a pair of replacement coordinates for the given easting, northing, hemisphere letter and zone number'),
 
     new transformationDataModel.CustomFunctionDeclaration(
-      'replace-several', 
-      '(defn replace-several [content replacements] (let [replacement-list (partition 2 replacements)] (reduce (fn [arg1 arg2] (apply clojure.string/replace arg1 arg2)) content replacement-list)))', 
+      'replace-several',
+      '(defn replace-several [content replacements] (let [replacement-list (partition 2 replacements)] (reduce (fn [arg1 arg2] (apply clojure.string/replace arg1 arg2)) content replacement-list)))',
       'SERVICE',
       'Replace several strings in another string based on a map of replacement pairs (used with "get-lat-long-strings-replacement" results to convert coordinates)'),
 
     new transformationDataModel.CustomFunctionDeclaration(
-      'convert-col-lat-long', 
-      '(defn convert-col-lat-long [col hemisphere zoneNumber] (let [all-coords (re-seq (re-pattern "-?[0-9]{1,13}.[0-9]+") col)] (replace-several col (flatten (map (fn [coord-pair] (get-lat-long-strings-replacement (nth coord-pair 0) (nth coord-pair 1) hemisphere zoneNumber)) (partition 2 all-coords))))))', 
+      'convert-col-lat-long',
+      '(defn convert-col-lat-long [col hemisphere zoneNumber] (let [all-coords (re-seq (re-pattern "-?[0-9]{1,13}.[0-9]+") col)] (replace-several col (flatten (map (fn [coord-pair] (get-lat-long-strings-replacement (nth coord-pair 0) (nth coord-pair 1) hemisphere zoneNumber)) (partition 2 all-coords))))))',
       'SERVICE',
       'Convert coordinate pairs in a given cell by input hemisphere string ("N" or "S") and zone number (e.g., 32)')
 
   );
-  
+
   var predicatefunctions = [
     new transformationDataModel.CustomFunctionDeclaration('empty?', '', 'PREDICATE', 'Returns true if given collection has no items'),
     new transformationDataModel.CustomFunctionDeclaration('not-empty?', '(def not-empty? (complement empty?))', 'PREDICATE', 'Returns true if given collection has at least 1 item'),
@@ -273,14 +273,23 @@ angular.module('grafterizerApp')
         return;
       }
 
-      var file = $scope.fileUpload;
-
-      uploadFile.upload(file, function(data) {
+      var callback = function (data) {
         $state.go('transformations.transformation.preview', {
           distributionId: data.id
         });
-      });
+      };
 
+      $mdDialog.show({
+        templateUrl: 'views/inputformatter.html',
+        controller: 'InputFormatterControler',
+        scope: $scope.$new(false, $scope),
+        uploadFile: uploadFile,
+        state: $state,
+        transformationDataModel: transformationDataModel,
+        rootScope: $rootScope,
+        callback: callback,
+        clickOutsideToClose: false
+      });
     }
   });
 

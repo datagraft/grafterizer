@@ -1,0 +1,70 @@
+<md-dialog aria-label='Choose your input options' class="sin-function-dialog" flex="40">
+  <md-toolbar>
+    <div class="md-toolbar-tools">
+      <h2>Choose your input options</h2>
+    </div>
+  </md-toolbar>
+  <md-dialog-content class="sticky-container" >
+    <div layout="column">
+
+      <div>
+        <show-hide-documentation show-usage="showUsage"></show-hide-documentation>
+        <div class="md-padding" class="api-doc-docstring" ng-show="showUsage" layout="column">
+          <p>
+            Create a dataset by choosing basic file format and other input parameters.
+            </br>
+            </br>
+            If the input is a Delimiter-Separated-File, enter the single charactor delimiter in 'Delimiter' field.
+            </br>
+            For Tab-Separated files(tsv), write 't' or 'tab'.
+            </br>
+            </br>
+            If the input is an Excel SpreadSheet, choose the sheetname you want to process.
+            </br>
+            Press 'Upload' to proceed with the transformation.
+          </p>
+
+          <hr></div>
+      </div>
+      <!--File type chooser-->
+      <div layout="column" class="md-padding">
+        <label>File category</label>
+        <md-input-container flex>
+
+          <md-select flex class="md-primary md-default-theme" style="top:10px"
+                     aria-label="File Type"
+                     placeholder="{{ selectedType }}"
+                     ng-model="selectedType">
+            <md-option ng-repeat="val in typeList" value={{val}}>{{val}}</md-option>
+          </md-select>
+        </md-input-container>
+      </div>
+      <!-- Excel sheet name identifier-->
+      <div ng-show="selectedType === 'Excel'" layout="column" class="md-padding">
+        <label>Excel sheets</label>
+        <md-input-container flex>
+          <md-select flex class="md-primary md-default-theme"
+                     aria-label="File Type"
+                     onchange="changeSheet()"
+                     placeholder="{{ selectedSheet }}"
+                     ng-model="selectedSheet">
+            <md-option ng-repeat="val in sheetNames" value={{val}}>{{val}}</md-option>
+          </md-select>
+        </md-input-container>
+      </div>
+
+      <!-- Delimiter separator file content-->
+      <div ng-show="selectedType === 'CSV'" layout="column" class="md-padding">
+        <label>Delimiter</label>
+        <md-input-container flex>
+          <input ng-model="delimiter" type="text" default="," ng-readonly="$root.readonlymode" aria-label="Delimiter"/>
+        </md-input-container>
+      </div>
+    </div>
+    <div ng-hide="hideToolbar" class="md-actions" layout="row" layout-align="right">
+      <md-button class="md-raised" ng-click="uploadSelected()" aria-label="Upload file" ng-disabled="$root.readonlymode">
+        Upload
+      </md-button>
+    </div>
+  </md-dialog-content>
+</md-dialog>

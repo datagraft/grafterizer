@@ -120,11 +120,11 @@ angular.module('grafterizerApp')
       'DATE FUNCTIONS', 'Transform date dd/mm/yyyy ~> yyyy-mm-dd'),
     new transformationDataModel.CustomFunctionDeclaration(
       'double-literal',
-      '(defn double-literal [s] (if (nil? (re-matches #"[0-9.]+" s)) 0 (Double/parseDouble s)))', 
+      '(defn double-literal [s] (if (nil? (re-matches #"[0-9.]+" s)) 0 (Double/parseDouble s)))',
       'CONVERT DATATYPE', 'Coerce to double. Null and non-valid values are replaced with zero'),
     new transformationDataModel.CustomFunctionDeclaration(
       'integer-literal',
-      '(defn integer-literal [s] (if (nil? (re-matches #"[0-9.]+" s)) 0 (Integer/parseInt s)))', 
+      '(defn integer-literal [s] (if (nil? (re-matches #"[0-9.]+" s)) 0 (Integer/parseInt s)))',
       'CONVERT DATATYPE', 'Coerce to integer. Null and non-valid values are replaced with zero'),
     new transformationDataModel.CustomFunctionDeclaration(
       'transform-gender',
@@ -135,7 +135,7 @@ angular.module('grafterizerApp')
       '(defn stringToNumeric    [x] (if (= "" x) nil  (if (.contains x ".") (Double/parseDouble x)(Integer/parseInt x))))',
       'CONVERT DATATYPE', 'Convert string to numeric'),
     new transformationDataModel.CustomFunctionDeclaration(
-      'string-literal', 
+      'string-literal',
       '(def string-literal s)',
       'CONVERT DATATYPE', 'Coerce to string'),
     new transformationDataModel.CustomFunctionDeclaration('boolean', '', 'CONVERT DATATYPE', 'Coerce to boolean'),
@@ -154,12 +154,12 @@ angular.module('grafterizerApp')
     new transformationDataModel.CustomFunctionDeclaration('second', '', 'COLLECTION', 'Returns the second item in the collection'),
     new transformationDataModel.CustomFunctionDeclaration('short', '', 'CONVERT DATATYPE', 'Coerce to short'),
     new transformationDataModel.CustomFunctionDeclaration(
-      'join',        
-      '(defn join [& strings] (clojure.string/join " " strings))', 
+      'join',
+      '(defn join [& strings] (clojure.string/join " " strings))',
       'STRING', 'Returns a string of all elements in the collection separated by space.'),
     new transformationDataModel.CustomFunctionDeclaration(
       'join-with',
-      '(defn join-with [sep] ( fn [& strings] (clojure.string/join sep strings)))', 
+      '(defn join-with [sep] ( fn [& strings] (clojure.string/join sep strings)))',
       'STRING', 'Returns a string of all elements in the collection separated by custom separator.'),
     new transformationDataModel.CustomFunctionDeclaration('lower-case', '', 'STRING', 'Converts string to all lower-case'),
     new transformationDataModel.CustomFunctionDeclaration('upper-case', '', 'STRING', 'Converts string to all upper-case'),
@@ -189,20 +189,20 @@ angular.module('grafterizerApp')
 
   customfunctions.push(
     new transformationDataModel.CustomFunctionDeclaration(
-      'get-lat-long-strings-replacement', 
-      '(defn get-lat-long-strings-replacement [easting northing hemisphere zoneNumber] (let [utmCoords (. gov.nasa.worldwind.geom.coords.UTMCoord fromUTM (Integer/parseInt zoneNumber) (if (= hemisphere "N") "gov.nasa.worldwind.avkey.North" (if (= hemisphere "S") "gov.nasa.worldwind.avkey.East" (throw (Exception. "Wrong hemisphere input")))) (Double/parseDouble easting) (Double/parseDouble northing))] (vector (re-pattern easting) (str (.getDegrees (.getLongitude utmCoords))) (re-pattern northing) (str (.getDegrees (.getLatitude utmCoords))))))', 
-      'SERVICE', 
+      'get-lat-long-strings-replacement',
+      '(defn get-lat-long-strings-replacement [easting northing hemisphere zoneNumber] (let [utmCoords (. gov.nasa.worldwind.geom.coords.UTMCoord fromUTM (Integer/parseInt zoneNumber) (if (= hemisphere "N") "gov.nasa.worldwind.avkey.North" (if (= hemisphere "S") "gov.nasa.worldwind.avkey.East" (throw (Exception. "Wrong hemisphere input")))) (Double/parseDouble easting) (Double/parseDouble northing))] (vector (re-pattern easting) (str (.getDegrees (.getLongitude utmCoords))) (re-pattern northing) (str (.getDegrees (.getLatitude utmCoords))))))',
+      'SERVICE',
       'Produces a pair of replacement coordinates for the given easting, northing, hemisphere letter and zone number'),
 
     new transformationDataModel.CustomFunctionDeclaration(
-      'replace-several', 
-      '(defn replace-several [content replacements] (let [replacement-list (partition 2 replacements)] (reduce (fn [arg1 arg2] (apply clojure.string/replace arg1 arg2)) content replacement-list)))', 
+      'replace-several',
+      '(defn replace-several [content replacements] (let [replacement-list (partition 2 replacements)] (reduce (fn [arg1 arg2] (apply clojure.string/replace arg1 arg2)) content replacement-list)))',
       'SERVICE',
       'Replace several strings in another string based on a map of replacement pairs (used with "get-lat-long-strings-replacement" results to convert coordinates)'),
 
     new transformationDataModel.CustomFunctionDeclaration(
-      'convert-col-lat-long', 
-      '(defn convert-col-lat-long [col hemisphere zoneNumber] (let [all-coords (re-seq (re-pattern "-?[0-9]{1,13}.[0-9]+") col)] (replace-several col (flatten (map (fn [coord-pair] (get-lat-long-strings-replacement (nth coord-pair 0) (nth coord-pair 1) hemisphere zoneNumber)) (partition 2 all-coords))))))', 
+      'convert-col-lat-long',
+      '(defn convert-col-lat-long [col hemisphere zoneNumber] (let [all-coords (re-seq (re-pattern "-?[0-9]{1,13}.[0-9]+") col)] (replace-several col (flatten (map (fn [coord-pair] (get-lat-long-strings-replacement (nth coord-pair 0) (nth coord-pair 1) hemisphere zoneNumber)) (partition 2 all-coords))))))',
       'SERVICE',
       'Convert coordinate pairs in a given cell by input hemisphere string ("N" or "S") and zone number (e.g., 32)'),
 new transformationDataModel.CustomFunctionDeclaration('fill-when', '(defn fill-when [col] (grafter.sequences/fill-when col))', 'SERVICE','Takes a sequence of values and copies a value through the sequence depending on the supplied predicate function')
@@ -390,10 +390,21 @@ new transformationDataModel.CustomFunctionDeclaration('fill-when', '(defn fill-w
 
     $scope.$watch('fileUpload', function() {
       if ($scope.fileUpload) {
-        var file = $scope.fileUpload;
 
-        uploadFile.upload(file, function(data) {
+        var callback = function(data) {
           $rootScope.actions.save(data);
+        };
+
+        $mdDialog.show({
+          templateUrl: 'views/inputformatter.html',
+          controller: 'InputFormatterControler',
+          scope: $scope.$new(false, $scope),
+          uploadFile: uploadFile,
+          state: $state,
+          transformationDataModel: transformationDataModel,
+          rootScope: $rootScope,
+          callback: callback,
+          clickOutsideToClose: false
         });
       }
     });
