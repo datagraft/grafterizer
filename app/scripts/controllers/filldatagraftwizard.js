@@ -55,7 +55,8 @@ angular.module('grafterizerApp')
               })
             );
           } else {
-            var location = '/myassets/upwizards/fill_sparql_endpoint/'+matchUpwizardId[1];
+            var location = $scope.mapRDF == 'graft' ? '/myassets/upwizards/fill_sparql_endpoint/' : '/myassets/upwizards/fill_filestore/';
+            location += matchUpwizardId[1];
             datagraftPostMessage.setLocation(location);
             $mdDialog.cancel();
           }
