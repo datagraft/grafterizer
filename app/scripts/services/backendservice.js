@@ -8,7 +8,7 @@
  * Service in the grafterizerApp.
  */
 angular.module('grafterizerApp')
-.provider('backendService', function() {
+  .provider('backendService', function() {
 
   var endpoint = '';
   this.setEndpoint = function(newEndpoint) {
@@ -40,10 +40,10 @@ angular.module('grafterizerApp')
       }
 
       $mdToast.show(
-          $mdToast.simple()
-          .content(message)
-          .position('bottom left')
-          .hideDelay(3000)
+        $mdToast.simple()
+        .content(message)
+        .position('bottom left')
+        .hideDelay(3000)
       );
 
       Raven.captureMessage(message, {

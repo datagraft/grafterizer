@@ -9,92 +9,93 @@
  */
 angular.module('grafterizerApp')
   .controller('ComputetriplesCtrl', function(
-    $scope,
-    $rootScope,
-    $mdDialog,
-    $stateParams,
-    backendService,
-    PipeService,
-    datagraftPostMessage,
-    jarfterService,
-    $sanitize) {
+              $scope,
+               $rootScope,
+               $mdDialog,
+               $stateParams,
+               backendService,
+               PipeService,
+               datagraftPostMessage,
+               jarfterService,
+               $sanitize) {
 
-    $scope.distribution = $stateParams.distributionId;
+  $scope.showMapRDFButton = $rootScope.transformation.graphs && $rootScope.transformation.graphs.length !== 0;
+  $scope.distribution = $stateParams.distributionId;
 
-    $scope.transformation = $stateParams.id;
+  $scope.transformation = $stateParams.id;
 
-    $scope.type = 'pipe';
-    if ($rootScope.transformation.graphs &&
+  $scope.type = 'pipe';
+  if ($rootScope.transformation.graphs &&
       $rootScope.transformation.graphs.length !== 0) {
-      $scope.type = 'graft';
+    $scope.type = 'graft';
+  }
+
+  $scope.downloadLink = PipeService.computeTuplesHref(
+    $scope.distribution, $scope.transformation, $scope.type);
+
+  $scope.lastPreviewDuration = PipeService.getLastPreviewDuration();
+  $scope.verySlowMode = $scope.lastPreviewDuration > 25000;
+  // $scope.verySlowMode = $scope.lastPreviewDuration > 25;
+
+  $scope.ugly = function() {
+    // TODO fixme
+    window.setTimeout(function() {
+      $mdDialog.hide();
+    }, 1);
+  };
+
+  $scope.isRDF = $rootScope.transformation.graphs.length ? $rootScope.transformation.graphs.length : 0;
+  $scope.downloadJarEndpoint = jarfterService.getJarCreatorStandAloneEndpoint();
+  $scope.transformEndpoint = jarfterService.getTransformStandAloneEndpoint();
+
+  $scope.onSubmitDownloadJar = function() {
+    $scope.jarfterClojure = jarfterService.generateClojure($rootScope.transformation);
+    $mdDialog.hide();
+  };
+
+  $scope.startDownloadProcessing = function() {
+    if ($scope.downloadLinkSlowMode) {
+      $scope.ugly();
+      return;
     }
 
-    $scope.downloadLink = PipeService.computeTuplesHref(
+    $scope.downloadProcessing = true;
+    $scope.downloadProcessingStatus = 'Preheating';
+
+    var promises = PipeService.computeTuplesHrefAsync(
       $scope.distribution, $scope.transformation, $scope.type);
 
-    $scope.lastPreviewDuration = PipeService.getLastPreviewDuration();
-    $scope.verySlowMode = $scope.lastPreviewDuration > 25000;
-    // $scope.verySlowMode = $scope.lastPreviewDuration > 25;
+    var intervalEstimatedStuff = 0;
 
-    $scope.ugly = function() {
-      // TODO fixme
-      window.setTimeout(function() {
-        $mdDialog.hide();
-      }, 1);
-    };
+    promises.middle.then(function() {
+      $scope.downloadProcessingStatus = 'Computing stuff';
 
-    $scope.isRDF = $rootScope.transformation.graphs.length ? $rootScope.transformation.graphs.length : 0;
-    $scope.downloadJarEndpoint = jarfterService.getJarCreatorStandAloneEndpoint();
-    $scope.transformEndpoint = jarfterService.getTransformStandAloneEndpoint();
+      var startTime = +new Date();
+      intervalEstimatedStuff = window.setInterval(function() {
+        var duration = (+new Date()) - startTime;
 
-    $scope.onSubmitDownloadJar = function() {
-      $scope.jarfterClojure = jarfterService.generateClojure($rootScope.transformation);
-      $mdDialog.hide();
-    };
+        var durationLeft = $scope.lastPreviewDuration + 5000 - duration;
+        $scope.downloadProcessingStatus = 'Estimated end of the processing: ' +
+          moment.duration(durationLeft).humanize(true);
+      }, 1000);
+    });
 
-    $scope.startDownloadProcessing = function() {
-      if ($scope.downloadLinkSlowMode) {
-        $scope.ugly();
-        return;
-      }
+    promises.final.then(function(data) {
+      window.clearInterval(intervalEstimatedStuff);
 
-      $scope.downloadProcessing = true;
-      $scope.downloadProcessingStatus = 'Preheating';
+      $scope.downloadLinkSlowMode = data.url;
+      $scope.downloadProcessing = false;
+      $scope.downloadProcessingStatus = null;
+      $scope.slowModeThanks = true;
+    },
 
-      var promises = PipeService.computeTuplesHrefAsync(
-        $scope.distribution, $scope.transformation, $scope.type);
+                        function() {
+      window.clearInterval(intervalEstimatedStuff);
+      $scope.downloadProcessingStatus = 'Unable to compute the data. Please try again';
+    });
+  };
 
-      var intervalEstimatedStuff = 0;
-
-      promises.middle.then(function() {
-        $scope.downloadProcessingStatus = 'Computing stuff';
-
-        var startTime = +new Date();
-        intervalEstimatedStuff = window.setInterval(function() {
-          var duration = (+new Date()) - startTime;
-
-          var durationLeft = $scope.lastPreviewDuration + 5000 - duration;
-          $scope.downloadProcessingStatus = 'Estimated end of the processing: ' +
-            moment.duration(durationLeft).humanize(true);
-        }, 1000);
-      });
-
-      promises.final.then(function(data) {
-          window.clearInterval(intervalEstimatedStuff);
-
-          $scope.downloadLinkSlowMode = data.url;
-          $scope.downloadProcessing = false;
-          $scope.downloadProcessingStatus = null;
-          $scope.slowModeThanks = true;
-        },
-
-        function() {
-          window.clearInterval(intervalEstimatedStuff);
-          $scope.downloadProcessingStatus = 'Unable to compute the data. Please try again';
-        });
-    };
-
-    /*var showError = function(data) {
+  /*var showError = function(data) {
       $mdDialog.hide();
 
       var contentError = '';
@@ -116,35 +117,35 @@ angular.module('grafterizerApp')
       }, 500);
     };*/
 
-    var executeAndSaveToSparqlEndpoint = function(accessUrl) {
-      PipeService.fillRDFrepo($scope.distribution, $scope.transformation, accessUrl).success(function(data) {
-        $scope.processing = false;
-        $scope.ugly();
-        $mdDialog.show(
-          $mdDialog.alert({
-            title: 'It\'s a success',
-            content: 'The data has correctly been save in the queriable data store.',
-            ok: 'Ok'
-          })
-        );
-      }).error(function() {
-        $scope.processing = false;
-      });
-    };
+  var executeAndSaveToSparqlEndpoint = function(accessUrl) {
+    PipeService.fillRDFrepo($scope.distribution, $scope.transformation, accessUrl).success(function(data) {
+      $scope.processing = false;
+      $scope.ugly();
+      $mdDialog.show(
+        $mdDialog.alert({
+          title: 'It\'s a success',
+          content: 'The data has correctly been save in the queriable data store.',
+          ok: 'Ok'
+        })
+      );
+    }).error(function() {
+      $scope.processing = false;
+    });
+  };
 
-    $scope.executeAndSave = function() {
-      $scope.processing = true;
+  $scope.executeAndSave = function() {
+    $scope.processing = true;
 
-      // if ($scope.selectedSparqlEndpoint === 'new') {
-      //   $scope.processingStatus = 'Creating the Queriable Data Store';
-      //   // TODO check this
-      //   window.alert('Not implemented');
-      // } else {
-        executeAndSaveToSparqlEndpoint($scope.selectedSparqlEndpoint);
-      // }
-    };
+    // if ($scope.selectedSparqlEndpoint === 'new') {
+    //   $scope.processingStatus = 'Creating the Queriable Data Store';
+    //   // TODO check this
+    //   window.alert('Not implemented');
+    // } else {
+    executeAndSaveToSparqlEndpoint($scope.selectedSparqlEndpoint);
+    // }
+  };
 
-    /*$scope.makeNewDataset = function() {
+  /*$scope.makeNewDataset = function() {
 
       $scope.processing = true;
       $scope.processingStatus = 'Making the dataset';
@@ -240,12 +241,12 @@ angular.module('grafterizerApp')
         }).error(showError);
     };*/
 
-    // Load the sparql endpoints from datagraft
-    backendService.sparqlEndpoints().success(function(data) {
-      $scope.sparqlEndpoints = data['dcat:record'];
-    });
-
-    $scope.cancel = function() {
-      $mdDialog.cancel();
-    };
+  // Load the sparql endpoints from datagraft
+  backendService.sparqlEndpoints().success(function(data) {
+    $scope.sparqlEndpoints = data['dcat:record'];
   });
+
+  $scope.cancel = function() {
+    $mdDialog.cancel();
+  };
+});

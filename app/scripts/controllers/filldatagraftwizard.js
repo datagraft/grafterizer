@@ -18,11 +18,15 @@ angular.module('grafterizerApp')
 
   $scope.processing = false;
   $scope.mapRDF = $scope.showMapRDFButton = $rootScope.transformation.graphs && $rootScope.transformation.graphs.length !== 0;
-
   $scope.cancel = function() {
     $mdDialog.cancel();
   };
 
+  // not sure why this is necessary...manually changes value of mapRDF according to the state of the toggle
+  $scope.onChange = function (changed) {
+    $scope.mapRDF = changed;
+  };
+  
   $scope.continue = function() {
     var distribution = $stateParams.distributionId;
     var transformation = $stateParams.id;

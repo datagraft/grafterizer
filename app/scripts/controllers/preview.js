@@ -17,11 +17,13 @@ angular.module('grafterizerApp')
             generateClojure,
             $mdToast,
             $mdDialog,
-            transformationDataModel) {
+            transformationDataModel,
+            datagraftPostMessage) {
   
   var paginationSize = 100;
 
-  $scope.$on('$stateChangeSuccess', function(event, toState, toParams, fromState, fromParams){ 
+  $scope.$on('$stateChangeSuccess', function(event, toState, toParams, fromState, fromParams){
+    $scope.pathBack = toParams.path_back;
     if(toParams.distributionId){
       $scope.$parent.showPreview = true;
       $rootScope.previewmode = true;
@@ -216,6 +218,11 @@ angular.module('grafterizerApp')
         clickOutsideToClose: true
       });
     };
+    
+    $scope.previousWizardStep = function() {
+      datagraftPostMessage.setLocation($scope.pathBack);
+    };
+    
     $scope.download = function() {
       $rootScope.actions.download();
     };

@@ -11,7 +11,7 @@ angular.module('grafterizerApp')
   .service('uploadFile', function(backendService) {
     this.upload = function(file, finalCallback) {
       backendService.uploadDistribution(file, {
-        title: 'Preview: ' + file.name,
+        title: 'previewed_dataset_' + file.name,
         description: 'File uploaded from Grafterizer in preview mode'
       }).success(finalCallback);
     };
