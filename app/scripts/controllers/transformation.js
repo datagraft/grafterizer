@@ -25,8 +25,10 @@ angular.module('grafterizerApp')
 
     // TODO FIXME hack to remove element :-(
     var upwizardExtractIDRegex = /^upwizards--(\d+)$/;
-    if(toParams.distributionId.match(upwizardExtractIDRegex)){
-      document.getElementById("upload-menu").style.display = "none";
+    if(toParams.distributionId){
+      if(toParams.distributionId.match(upwizardExtractIDRegex)){
+        document.getElementById("upload-menu").style.display = "none";
+      }
     }
   });
   var customfunctions = [
