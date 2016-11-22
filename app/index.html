@@ -26,6 +26,7 @@
     <!-- build:css(.) styles/vendor.css -->
     <!-- bower:css -->
     <link rel="stylesheet" href="bower_components/angular-ui-grid/ui-grid.css" />
+    <link rel="stylesheet" href="bower_components/angular-ui-grid/ui-grid.min.css" />
     <link rel="stylesheet" href="bower_components/angular-material/angular-material.css" />
     <link rel="stylesheet" href="bower_components/components-font-awesome/css/font-awesome.css" />
     <link rel="stylesheet" href="bower_components/angular-loading-bar/build/loading-bar.css" />
@@ -39,7 +40,7 @@
     <link rel="stylesheet" href="styles/main.css">
     <!-- endbuild -->
   </head>
-  <body layout="row">
+  <body layout="row" ng-class="{ toggle: $root.showFlags }" ng-cloak>
     <!--[if lt IE 9]>
       <p class="browsehappy">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> to improve your experience.</p>
     <![endif]-->
@@ -53,14 +54,13 @@
         </div>
        </md-toolbar>
 
-      <div id="mainview" flex layout="column" ui-view="main"></div>
+     <div ng-click="$root.showFlags = false" class="mainContainer" id="mainview" flex layout="column" ui-view="main"></div>
     </div>
-
+    <div class="flagContainer" feature-flag-overrides></div>   
     <!-- build:js(.) scripts/vendor.js -->
     <!-- bower:js -->
     <script src="bower_components/angular/angular.js"></script>
     <script src="bower_components/angular-animate/angular-animate.js"></script>
-    <script src="bower_components/angular-aria/angular-aria.js"></script>
     <script src="bower_components/angular-cookies/angular-cookies.js"></script>
     <script src="bower_components/angular-resource/angular-resource.js"></script>
     <script src="bower_components/angular-route/angular-route.js"></script>
@@ -68,6 +68,8 @@
     <script src="bower_components/angular-touch/angular-touch.js"></script>
     <script src="bower_components/ng-file-upload/ng-file-upload.js"></script>
     <script src="bower_components/angular-ui-grid/ui-grid.js"></script>
+    <script src="bower_components/angular-ui-grid/ui-grid.min.js"></script>
+    <script src="bower_components/angular-aria/angular-aria.js"></script>
     <script src="bower_components/angular-material/angular-material.js"></script>
     <script src="bower_components/lodash/lodash.js"></script>
     <script src="bower_components/angular-loading-bar/build/loading-bar.js"></script>
@@ -85,6 +87,7 @@
     <script src="bower_components/raven-js/dist/raven.js"></script>
     <script src="bower_components/angular-mocks/angular-mocks.js"></script>
     <script src="bower_components/oi.select/dist/select-tpls.min.js"></script>
+    <script src="bower_components/angular-feature-flags/dist/featureFlags.js"></script>
     <!-- endbower -->
     <!-- endbuild -->
     <!-- build:js(.) scripts/clojure.js -->

@@ -81,13 +81,20 @@ angular.module('grafterizerApp')
         });
       };
 
-      api.computeTuplesHref = function(distributionId, transformationId, type) {
+     /* api.computeTuplesHref = function(distributionId, transformationId, type) {
         return endpointRest + '/transform/' +
           window.encodeURIComponent(distributionId) +
           '/' + window.encodeURIComponent(transformationId) +
           '?type=' + (type ? window.encodeURIComponent(type) : 'pipe');
       };
-
+*/
+         api.computeTuplesHref = function (distributionId, transformationId, type, RDFformat) {
+                return endpointRest + '/transform/' +
+                    window.encodeURIComponent(distributionId) +
+                    '/' + window.encodeURIComponent(transformationId) +
+                    '?type=' + (type ? window.encodeURIComponent(type) : 'pipe') +
+                    '&rdfFormat=' + RDFformat;
+            };
       var loadDataAsync = function(deferred, hash, nbIterations, justTheStatusPlease) {
         if (nbIterations === 0) {
           cfpLoadingBar.start();
@@ -149,6 +156,7 @@ angular.module('grafterizerApp')
       var lastPreviewDuration = 60 * 1000 * 10; // 10 minutes
 
       api.preview = function(distributionId, clojure, page, pageSize) {
+         
         var deferred = $q.defer();
 
         var startTime = +new Date();
