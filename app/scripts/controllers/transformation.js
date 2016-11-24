@@ -21,6 +21,16 @@ angular.module('grafterizerApp')
                generateClojure,
                $controller) {
 
+  $scope.$on('$stateChangeSuccess', function (event, toState, toParams, fromState, fromParams) { 
+
+    // TODO FIXME hack to remove element :-(
+    var upwizardExtractIDRegex = /^upwizards--(\d+)$/;
+    if(toParams.distributionId){
+      if(toParams.distributionId.match(upwizardExtractIDRegex)){
+        document.getElementById("upload-menu").style.display = "none";
+      }
+    }
+  });
   var customfunctions = [
     new transformationDataModel.CustomFunctionDeclaration(
       'replace-varible-string',
@@ -76,7 +86,7 @@ angular.module('grafterizerApp')
     new transformationDataModel.CustomFunctionDeclaration('lower-case', '', 'STRING', 'Converts string to all lower-case'),
     new transformationDataModel.CustomFunctionDeclaration('upper-case', '', 'STRING', 'Converts string to all upper-case'),
     new transformationDataModel.CustomFunctionDeclaration('reverse', '', 'STRING', 'Returns given string with its characters reversed'),
-/*    new transformationDataModel.CustomFunctionDeclaration(
+    /*    new transformationDataModel.CustomFunctionDeclaration(
       'string-as-keyword',
       '(defn string-as-keyword [s] ( when (seq s) (->   (str s) clojure.string/trim   (clojure.string/replace "(" "-") (clojure.string/replace ")" "") (clojure.string/replace " " "_") (clojure.string/replace "," "-") (clojure.string/replace "." "") (clojure.string/replace "/" "-") (clojure.string/replace "---" "-") (clojure.string/replace "--" "-") (clojure.string/replace ":" "") (clojure.string/replace "\\"" "") )))', 'STRING', 'Removes blanks and special symbols from a string thus making it possible to use it as a keyword'),*/
     new transformationDataModel.CustomFunctionDeclaration('remove-blanks', '(defn remove-blanks [s]  (when (seq s)  (clojure.string/replace s " " "")))', 'STRING', 'Removes blanks in a string'),
@@ -114,16 +124,7 @@ angular.module('grafterizerApp')
       '(defn replace-several [content replacements] (let [replacement-list (partition 2 replacements)] (reduce (fn [arg1 arg2] (apply clojure.string/replace arg1 arg2)) content replacement-list)))', 
       'SERVICE',
       'Replace several strings in another string based on a map of replacement pairs (used with "get-lat-long-strings-replacement" results to convert coordinates)'),
-
-  /*  new transformationDataModel.CustomFunctionDeclaration(
->>>>>>> feature_toggling
-      'convert-col-lat-long', 
-      '(defn convert-col-lat-long [col hemisphere zoneNumber] (let [all-coords (re-seq (re-pattern "-?[0-9]{1,13}.[0-9]+") col)] (replace-several col (flatten (map (fn [coord-pair] (get-lat-long-strings-replacement (nth coord-pair 0) (nth coord-pair 1) hemisphere zoneNumber)) (partition 2 all-coords))))))', 
-      'SERVICE',
-      'Convert coordinate pairs in a given cell by input hemisphere string ("N" or "S") and zone number (e.g., 32)')
-
-  );*/
-      
+  
        new transformationDataModel.CustomFunctionDeclaration(
       'convert-col-lat-long', 
       '(defn convert-col-lat-long [col hemisphere zoneNumber] (let [all-coords (re-seq (re-pattern "-?[0-9.]+?(?=[, )])") col)] (replace-several col (flatten (map (fn [coord-pair] (get-lat-long-strings-replacement (nth coord-pair 0) (nth coord-pair 1) hemisphere zoneNumber)) (partition 2 all-coords))))))', 
@@ -132,6 +133,7 @@ angular.module('grafterizerApp')
 
 
   );
+
   var predicatefunctions = [
     new transformationDataModel.CustomFunctionDeclaration('empty?', '', 'PREDICATE', 'Returns true if given collection has no items'),
     new transformationDataModel.CustomFunctionDeclaration('not-empty?', '(def not-empty? (complement empty?))', 'PREDICATE', 'Returns true if given collection has at least 1 item'),
@@ -257,22 +259,24 @@ angular.module('grafterizerApp')
       transformation.pipelines = [$scope.pipeline];
     }
   }).error(function() {
-      $mdToast.show(
-        $mdToast.simple()
-        .content('Transformation unfound in the save file')
-        .position('bottom left')
-        .hideDelay(6000)
-      );
+    $mdToast.show(
+      $mdToast.simple()
+      .content('Transformation unfound in the save file')
+      .position('bottom left')
+      .hideDelay(6000)
+    );
   }).error(loadEmptyTransformation);
 
   $scope.$watch('fileUpload', function() {
     if ($scope.fileUpload) {
-      if ($rootScope.readonlymode) {
+      if ($rootScope.readonlymode || $rootScope.upwizardMode) {
         $mdToast.show(
           $mdToast.simple()
           .content($scope.loading ?
                    'Please wait the transformation loading before uploading files' :
-                   'File upload is disabled in readonly mode')
+                   ($rootScope.upwizardMode ?
+                    'File upload is disabled when using Datagraft\'s wizard' :
+                    'File upload is disabled in readonly mode'))
           .position('bottom left')
           .hideDelay(6000)
         );
@@ -317,18 +321,18 @@ angular.module('grafterizerApp')
       var clojure = generateClojure.fromTransformation($scope.transformation);
 
       backendService.updateTransformation(publisher, id,
-      // Base information
-      {
+                                          // Base information
+                                          {
         name: $scope.document.title,
         public: $scope.document['dct:public'] ? 'true' : 'false'
       },
-      // Extra metadata
-      {
+                                          // Extra metadata
+                                          {
         description: $scope.document.description,
         'dcat:keyword': $scope.document.keywords
       },
-      // Configuration
-      {
+                                          // Configuration
+                                          {
         transformationType: transformationType,
         transformationCommand: transformationCommand,
         code: clojure,

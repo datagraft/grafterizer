@@ -19,7 +19,9 @@ angular.module('grafterizerApp')
     });
 
     $scope.$on('$destroy', function() {
-      delete $rootScope.actions;
+      if (!$rootScope.upwizardMode) {
+        delete $rootScope.actions;
+      }
     });
 
     $scope.isIframe = window !== window.top;

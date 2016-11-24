@@ -62,14 +62,14 @@ angular.module('grafterizerApp')
           mousemove = function(e) {
             if (!requestAnim) {
               requestAnim = window.requestAnimationFrame(function() {
-                updateLayout(e.offsetX);
+                updateLayout(e.offsetX || e.layerX);
                 requestAnim = 0;
               });
             }
           };
         } else {
           mousemove = _.throttle(function(e) {
-            updateLayout(e.offsetX);
+            updateLayout(e.offsetX || e.layerX);
           }, 1 / 2000);
         }
 

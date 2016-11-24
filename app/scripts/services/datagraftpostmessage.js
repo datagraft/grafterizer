@@ -20,6 +20,8 @@ angular.module('grafterizerApp')
     var data = event.data;
     if (!data || !data.channel || data.channel !== channel) return;
 
+    connected = true;
+    
     try {
       switch (data.message) {
         case 'state.go':

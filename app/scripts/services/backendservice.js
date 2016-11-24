@@ -8,14 +8,14 @@
  * Service in the grafterizerApp.
  */
 angular.module('grafterizerApp')
-.provider('backendService', function() {
+  .provider('backendService', function() {
 
   var endpoint = '';
   this.setEndpoint = function(newEndpoint) {
     endpoint = newEndpoint;
   };
 
-  this.$get = function($http, $mdToast, Upload, $log, $state, $q) {
+  this.$get = function($http, $mdToast, $mdDialog, Upload, $log, $state, $q) {
     var api = {};
 
     var errorHandler = function(data, status, headers, config) {
@@ -27,7 +27,7 @@ angular.module('grafterizerApp')
           message = 'API error: ' + JSON.stringify(data.error);
         }
       } else if (status) {
-        if (status === 401 || status < 100) {
+        if (status === 401 || status === 403 || status < 100) {
           window.location = endpoint + '/oauth/begin';
           // message = 'Unauthorized access to the API';
           // $state.go('apikey');
@@ -40,10 +40,10 @@ angular.module('grafterizerApp')
       }
 
       $mdToast.show(
-          $mdToast.simple()
-          .content(message)
-          .position('bottom left')
-          .hideDelay(3000)
+        $mdToast.simple()
+        .content(message)
+        .position('bottom left')
+        .hideDelay(3000)
       );
 
       Raven.captureMessage(message, {
@@ -100,7 +100,16 @@ angular.module('grafterizerApp')
           errorHandler(data, status, headers, config);
           d.reject();
         });
-      }).error(errorHandler).error(function() {
+      }).error(errorHandler).error(function(data, status) {
+        if (status === 422) {
+          $mdDialog.show(
+            $mdDialog.alert({
+              title: 'Unable to save the transformation',
+              content: 'The server doesn\'t accept it. Please check that the transformation title isn\'t a reserved keyword.',
+              ok: 'Alright'
+            })
+          );
+        }
         d.reject();
       });
       return d.promise;
@@ -130,23 +139,27 @@ angular.module('grafterizerApp')
     };
 
     api.dataDistributions = function() {
-      return $http.get(endpoint + '/myassets/data_distributions').error(errorHandler);
+      return $http.get(endpoint + '/myassets/filestores').error(errorHandler);
     };
 
     api.uploadDistribution = function(file, metadata) {
       return Upload.upload({
-        url: endpoint + '/myassets/data_distributions',
+        url: endpoint + '/myassets/filestores',
         method: 'POST',
         data: {
-          'data_distribution[name]': metadata.title,
-          'data_distribution[description]': metadata.description,
-          'data_distribution[file]': file
+          'filestore[name]': metadata.title,
+          'filestore[description]': metadata.description,
+          'filestore[file]': file
         }
       }).error(errorHandler);
     };
 
     api.queriableDataStores = function() {
       return $http.get(endpoint + '/myassets/queriable_data_stores').error(errorHandler);
+    };
+
+    api.sparqlEndpoints = function() {
+      return $http.get(endpoint + '/myassets/sparql_endpoints').error(errorHandler);
     };
 
     return api;

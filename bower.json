@@ -15,7 +15,7 @@
     "components-font-awesome": "https://github.com/components/font-awesome.git#~4.6.3",
     "lodash": "~4.15.0",
     "angular-loading-bar": "~0.9.0",
-    "angular-ui-router": "1.0.0-beta.1",
+    "angular-ui-router": "~0.3.2",
     "angular-breadcrumb": "~0.4.1",
     "angular-moment": "1.0.0-beta.6",
     "ng-sortable": "~1.3.6",

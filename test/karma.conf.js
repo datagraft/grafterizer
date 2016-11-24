@@ -28,6 +28,7 @@ module.exports = function(config) {
       'bower_components/angular-touch/angular-touch.js',
       'bower_components/ng-file-upload/ng-file-upload.js',
       'bower_components/angular-ui-grid/ui-grid.js',
+      'bower_components/angular-ui-grid/ui-grid.min.js',
       'bower_components/angular-aria/angular-aria.js',
       'bower_components/angular-material/angular-material.js',
       'bower_components/lodash/lodash.js',
@@ -50,7 +51,9 @@ module.exports = function(config) {
       // endbower
       'app/scripts/**/*.js',
       'test/mock/**/*.js',
-      'test/spec/**/*.js'
+    //  'test/spec/**/*.js'
+      'test/spec/services/transformationdatamodel.js',
+      'test/spec/controllers/computetriples.js'
     ],
 
     // list of files / patterns to exclude

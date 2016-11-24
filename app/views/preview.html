@@ -6,10 +6,29 @@
                 {{graftwerkException}}
             </div>
             <preview-table class="with-bottom-switch" ng-model="data.edn" ng-load-more="loadMorePreview"></preview-table>
-            <md-switch class="live-preview-switch" ng-model="livePreview" aria-label="Switch live preview">
-                Automatic preview
-            </md-switch>
-            
+            <div class="bottom-table-container" layout="row" layout-align="space-between center">
+                <md-switch class="alive-preview-switch" ng-model="livePreview" aria-label="Switch live preview">
+                    Automatic preview
+                </md-switch>
+                <div layout="row" ng-show="upwizardMode">
+                    <md-button class="md-fab sin-fa-button" aria-label="Go back to the previous step in the wizard" ng-click="previousWizardStep()">
+                        <i class="fa fa-step-backward"></i>
+                        <md-tooltip>Go back to the previous step in the wizard</md-tooltip>
+                    </md-button>
+                    <md-button class="md-fab sin-fa-button" aria-label="Submit and go to the next step in DataGraft" ng-click="nextWizardStep()">
+                        <i class="fa fa-step-forward"></i>
+                        <md-tooltip>Submit and go to the next step in the wizard</md-tooltip>
+                    </md-button>
+                    <md-button class="md-fab md-primary sin-fa-button" aria-label="Transform the data" ng-click="download()">
+                        <i class="fa fa-cogs"></i>
+                        <md-tooltip>Transform data</md-tooltip>
+                    </md-button>
+                    <md-button class="md-fab md-primary sin-fa-button" aria-label="Save" ng-click="save()">
+                        <i class="fa fa-save"></i>
+                        <md-tooltip>Save</md-tooltip>
+                    </md-button>
+                </div> 
+            </div>
         </md-tab-body>
     </md-tab>
     <!-- TODO disabled looks like it's broken -->
@@ -22,3 +41,6 @@
 </md-tabs>
 
 </md-content>
+
+
+

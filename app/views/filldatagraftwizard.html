@@ -1,0 +1,30 @@
+<md-dialog aria-label='Choose download mode'  flex="33">
+  <md-dialog-content style="margin: 40px auto 0px auto;" layout="row" layout-sm="column" class="sticky-container" layout-align="center center">
+    <div ng-if="!processing" layout="column" layout-align="center center">
+
+      <div layout="row" layout-align="center" ng-show="showMapRDFButton">
+        <a class="sin-left-label-switch" href="">Publish CSV result as file</a>
+        <md-switch aria-label="Map the tabular data to RDF" ng-model="mapRDF" ng-change="onChange(mapRDF)">
+          Add RDF to SPARQL endpoint
+        </md-switch>
+      </div>
+      <p class="md-caption">
+        Please confirm that you want to continue to the next step in Datagraft.
+        <br/>This action will transform the data and close Grafterizer.
+      </p>
+      <md-button class="md-fab md-accent sin-fa-button" aria-label="Continue" ng-click="continue()">
+        <i class="fa fa-check"></i>
+      </md-button>
+    </div>
+
+    <div ng-if="processing">
+      <p class="md-caption">
+        Please while the data is being processed. This may take a few minutes.
+      </p>
+      <md-progress-circular style="margin: 30px auto 0px auto;" md-mode="indeterminate"></md-progress-circular>
+    </div>
+  </md-dialog-content>
+  <div class="md-actions" layout="row" layout-align="right">
+    <md-button class="md-primary" aria-label="Cancel" ng-click="cancel()">Cancel</md-button>
+  </div>
+</md-dialog>

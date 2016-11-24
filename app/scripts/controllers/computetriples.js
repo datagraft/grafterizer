@@ -18,83 +18,169 @@ angular.module('grafterizerApp')
     datagraftPostMessage,
     jarfterService,
     $sanitize) {
-
+      
+ $scope.showMapRDFButton = $rootScope.transformation.graphs && $rootScope.transformation.graphs.length !== 0;
+ $scope.RDFformats = [
+            {
+                format: 'nt'
+                , description: 'N-Triples (.nt)'
+            }
+            
+            , {
+                format: 'rdf'
+                , description: 'RDF/XML (.rdf)'
+            }
+        
+            , {
+                format: 'ttl'
+                , description: 'Turtle (.ttl)'
+            }
+            
+            , {
+                format: 'nq'
+                , description: 'N-Quads (.nq)'
+            }
+            , {
+                format: 'n3'
+                , description: 'N3 (.n3)'
+            }
+            
+            , {
+                format: 'trix'
+                , description: 'TriX (.trix)'
+            }
+            , {
+                format: 'trig'
+                , description: 'TriG (.trig)'
+            },
+        ];
+        var filetypeFlag = false;
+    for (var i = 0; i < $rootScope.flags.length; ++i)
+            if ($rootScope.flags[i].key === "filetypeToggling") {
+                filetypeFlag = $rootScope.flags[i].active;
+                break;
+            }
+        console.log(filetypeFlag);
+    
     $scope.distribution = $stateParams.distributionId;
 
-    $scope.transformation = $stateParams.id;
+  $scope.transformation = $stateParams.id;
 
-    $scope.type = 'pipe';
+     if (!filetypeFlag) {
+            $scope.type = 'pipe';
+            if ($rootScope.transformation.graphs &&
+                $rootScope.transformation.graphs.length !== 0) {
+                $scope.type = 'graft';
+            }
+            $scope.downloadLink = PipeService.computeTuplesHref(
+                $scope.distribution, $scope.transformation, $scope.type);
+        } else {
+            $scope.type = 'pipe';
+            if (typeof $scope.outRDF === 'undefined') 
+            {
+            if ($rootScope.transformation.graphs && $rootScope.transformation.graphs.length !== 0) $scope.outRDF = false;   
+            }
+            $scope.downloadLink = PipeService.computeTuplesHref(
+                $scope.distribution, $scope.transformation, $scope.type, 'nt');
+            $scope.$watch('outRDF', function (value) {
+                $scope.outRDF = value;
+                if (value) {
+                    if ($rootScope.transformation.graphs &&
+                        $rootScope.transformation.graphs.length !== 0) {
+                        $rootScope.outRDF = true;
+                        $scope.type = 'graft';
+                    }
+                }
+                   $scope.downloadLink = PipeService.computeTuplesHref(
+                    $scope.distribution, $scope.transformation, value ? $scope.type : 'pipe', 'nt');
+                console.log(value);
+                console.log($scope.type);
+            });
+            $scope.$watch('RDFformat', function (value) {
+                if ($scope.type == 'graft') {
+                var rdfFormat;
+                for (var i = 0; i < $scope.RDFformats.length; ++ i)
+                    if ($scope.RDFformats[i].description === value)
+                        rdfFormat = $scope.RDFformats[i].format;
+                    
+                $scope.downloadLink = PipeService.computeTuplesHref(
+                    $scope.distribution, $scope.transformation, value ? $scope.type : 'pipe', rdfFormat);
+                }
+            });
+        }
+ /* $scope.type = 'pipe';
     if ($rootScope.transformation.graphs &&
       $rootScope.transformation.graphs.length !== 0) {
-      $scope.type = 'graft';
-    }
+    $scope.type = 'graft';
+  }
 
     $scope.downloadLink = PipeService.computeTuplesHref(
-      $scope.distribution, $scope.transformation, $scope.type);
+      $scope.distribution, $scope.transformation, $scope.type);*/
 
-    $scope.lastPreviewDuration = PipeService.getLastPreviewDuration();
-    $scope.verySlowMode = $scope.lastPreviewDuration > 25000;
-    // $scope.verySlowMode = $scope.lastPreviewDuration > 25;
+  $scope.lastPreviewDuration = PipeService.getLastPreviewDuration();
+  $scope.verySlowMode = $scope.lastPreviewDuration > 25000;
+  // $scope.verySlowMode = $scope.lastPreviewDuration > 25;
 
-    $scope.ugly = function() {
-      // TODO fixme
-      window.setTimeout(function() {
-        $mdDialog.hide();
-      }, 1);
-    };
+  $scope.ugly = function() {
+    // TODO fixme
+    window.setTimeout(function() {
+      $mdDialog.hide();
+    }, 1);
+  };
 
     $scope.isRDF = $rootScope.transformation.graphs.length ? $rootScope.transformation.graphs.length : 0;
+    console.log($scope.isRDF);
     $scope.downloadJarEndpoint = jarfterService.getJarCreatorStandAloneEndpoint();
     $scope.transformEndpoint = jarfterService.getTransformStandAloneEndpoint();
 
-    $scope.onSubmitDownloadJar = function() {
-      $scope.jarfterClojure = jarfterService.generateClojure($rootScope.transformation);
-      $mdDialog.hide();
-    };
+  $scope.onSubmitDownloadJar = function() {
+    $scope.jarfterClojure = jarfterService.generateClojure($rootScope.transformation);
+    $mdDialog.hide();
+  };
 
-    $scope.startDownloadProcessing = function() {
-      if ($scope.downloadLinkSlowMode) {
-        $scope.ugly();
-        return;
-      }
+  $scope.startDownloadProcessing = function() {
+    if ($scope.downloadLinkSlowMode) {
+      $scope.ugly();
+      return;
+    }
 
-      $scope.downloadProcessing = true;
-      $scope.downloadProcessingStatus = 'Preheating';
+    $scope.downloadProcessing = true;
+    $scope.downloadProcessingStatus = 'Preheating';
 
-      var promises = PipeService.computeTuplesHrefAsync(
-        $scope.distribution, $scope.transformation, $scope.type);
+    var promises = PipeService.computeTuplesHrefAsync(
+      $scope.distribution, $scope.transformation, $scope.type);
 
-      var intervalEstimatedStuff = 0;
+    var intervalEstimatedStuff = 0;
 
-      promises.middle.then(function() {
-        $scope.downloadProcessingStatus = 'Computing stuff';
+    promises.middle.then(function() {
+      $scope.downloadProcessingStatus = 'Computing stuff';
 
-        var startTime = +new Date();
-        intervalEstimatedStuff = window.setInterval(function() {
-          var duration = (+new Date()) - startTime;
+      var startTime = +new Date();
+      intervalEstimatedStuff = window.setInterval(function() {
+        var duration = (+new Date()) - startTime;
 
-          var durationLeft = $scope.lastPreviewDuration + 5000 - duration;
-          $scope.downloadProcessingStatus = 'Estimated end of the processing: ' +
-            moment.duration(durationLeft).humanize(true);
-        }, 1000);
-      });
+        var durationLeft = $scope.lastPreviewDuration + 5000 - duration;
+        $scope.downloadProcessingStatus = 'Estimated end of the processing: ' +
+          moment.duration(durationLeft).humanize(true);
+      }, 1000);
+    });
 
-      promises.final.then(function(data) {
-          window.clearInterval(intervalEstimatedStuff);
+    promises.final.then(function(data) {
+      window.clearInterval(intervalEstimatedStuff);
 
-          $scope.downloadLinkSlowMode = data.url;
-          $scope.downloadProcessing = false;
-          $scope.downloadProcessingStatus = null;
-          $scope.slowModeThanks = true;
-        },
+      $scope.downloadLinkSlowMode = data.url;
+      $scope.downloadProcessing = false;
+      $scope.downloadProcessingStatus = null;
+      $scope.slowModeThanks = true;
+    },
 
-        function() {
-          window.clearInterval(intervalEstimatedStuff);
-          $scope.downloadProcessingStatus = 'Unable to compute the data. Please try again';
-        });
-    };
+                        function() {
+      window.clearInterval(intervalEstimatedStuff);
+      $scope.downloadProcessingStatus = 'Unable to compute the data. Please try again';
+    });
+  };
 
-    /*var showError = function(data) {
+  /*var showError = function(data) {
       $mdDialog.hide();
 
       var contentError = '';
@@ -116,35 +202,35 @@ angular.module('grafterizerApp')
       }, 500);
     };*/
 
-    var executeAndSaveToQDS = function(accessUrl) {
-      PipeService.fillRDFrepo($scope.distribution, $scope.transformation, accessUrl).success(function(data) {
-        $scope.processing = false;
-        $scope.ugly();
-        $mdDialog.show(
-          $mdDialog.alert({
-            title: 'It\'s a success',
-            content: 'The data has correctly been save in the queriable data store.',
-            ok: 'Ok'
-          })
-        );
-      }).error(function() {
-        $scope.processing = false;
-      });
-    };
+  var executeAndSaveToSparqlEndpoint = function(accessUrl) {
+    PipeService.fillRDFrepo($scope.distribution, $scope.transformation, accessUrl).success(function(data) {
+      $scope.processing = false;
+      $scope.ugly();
+      $mdDialog.show(
+        $mdDialog.alert({
+          title: 'It\'s a success',
+          content: 'The data has correctly been save in the queriable data store.',
+          ok: 'Ok'
+        })
+      );
+    }).error(function() {
+      $scope.processing = false;
+    });
+  };
 
-    $scope.executeAndSave = function() {
-      $scope.processing = true;
+  $scope.executeAndSave = function() {
+    $scope.processing = true;
 
-      if ($scope.selectedQDS === 'new') {
-        $scope.processingStatus = 'Creating the Queriable Data Store';
-        // TODO check this
-        window.alert('Not implemented');
-      } else {
-        executeAndSaveToQDS($scope.selectedQDS);
-      }
-    };
+    // if ($scope.selectedSparqlEndpoint === 'new') {
+    //   $scope.processingStatus = 'Creating the Queriable Data Store';
+    //   // TODO check this
+    //   window.alert('Not implemented');
+    // } else {
+    executeAndSaveToSparqlEndpoint($scope.selectedSparqlEndpoint);
+    // }
+  };
 
-    /*$scope.makeNewDataset = function() {
+  /*$scope.makeNewDataset = function() {
 
       $scope.processing = true;
       $scope.processingStatus = 'Making the dataset';
@@ -240,12 +326,12 @@ angular.module('grafterizerApp')
         }).error(showError);
     };*/
 
-    // Load the queriable data stores from datagraft
-    backendService.queriableDataStores().success(function(data) {
-      $scope.QDSs = data['dcat:record'];
-    });
-
-    $scope.cancel = function() {
-      $mdDialog.cancel();
-    };
+  // Load the sparql endpoints from datagraft
+  backendService.sparqlEndpoints().success(function(data) {
+    $scope.sparqlEndpoints = data['dcat:record'];
   });
+
+  $scope.cancel = function() {
+    $mdDialog.cancel();
+  };
+});

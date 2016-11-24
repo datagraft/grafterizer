@@ -81,13 +81,20 @@ angular.module('grafterizerApp')
         });
       };
 
-      api.computeTuplesHref = function(distributionId, transformationId, type) {
+     /* api.computeTuplesHref = function(distributionId, transformationId, type) {
         return endpointRest + '/transform/' +
           window.encodeURIComponent(distributionId) +
           '/' + window.encodeURIComponent(transformationId) +
           '?type=' + (type ? window.encodeURIComponent(type) : 'pipe');
       };
-
+*/
+         api.computeTuplesHref = function (distributionId, transformationId, type, RDFformat) {
+                return endpointRest + '/transform/' +
+                    window.encodeURIComponent(distributionId) +
+                    '/' + window.encodeURIComponent(transformationId) +
+                    '?type=' + (type ? window.encodeURIComponent(type) : 'pipe') +
+                    '&rdfFormat=' + RDFformat;
+            };
       var loadDataAsync = function(deferred, hash, nbIterations, justTheStatusPlease) {
         if (nbIterations === 0) {
           cfpLoadingBar.start();
@@ -235,7 +242,7 @@ angular.module('grafterizerApp')
             transformationUri: transformationUri,
             type: type || 'pipe'
           }
-        });
+        }).error(errorHandler);
       };
 
       api.fillRDFrepo = function(distribution, transformation, queriableDataStore) {
@@ -252,7 +259,23 @@ angular.module('grafterizerApp')
             queriabledatastore: queriableDataStore,
             ontotext: true
           }
-        });
+        }).error(errorHandler);
+      };
+
+      api.fillWizard = function(distribution, transformation, wizardId, transformationType) {
+        return $http({
+          url: endpointRest + '/fillWizard',
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          data: {
+            distribution: distribution,
+            transformation: transformation,
+            wizardId: wizardId,
+            type: transformationType
+          }
+        }).error(errorHandler);
       };
 
       return api;
