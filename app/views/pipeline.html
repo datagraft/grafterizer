@@ -4,16 +4,17 @@
       'pipeline-flow-line-preview': $root.previewmode
     }"
     class="pipeline-flow-line"></div>
-  <div as-sortable ng-model="pipeline.functions" ng-if="!$root.readonlymode">
-    <div ng-repeat="funct in pipeline.functions" as-sortable-item flex>
+
+  <div as-sortable ng-model="pipeline.functions" ng-if="!$root.readonlymode"  >
+    <div ng-repeat="funct in pipeline.functions" ng-if="$index > 0"   as-sortable-item flex>
       <div as-sortable-item-handle layout="row" layout-align="center">
         <md-fab-speed-dial md-direction="right" class="md-scale" md-open="funct.fabIsOpen"
-                         ng-mouseenter="funct.fabIsOpen=true" ng-mouseleave="funct.fabIsOpen=funct.isPreviewed||funct.leaveFabOpen" ng-click="toggleFabStates(funct)">
+                           ng-mouseenter="funct.fabIsOpen=true" ng-mouseleave="funct.fabIsOpen=funct.isPreviewed||funct.leaveFabOpen" ng-click="toggleFabStates(funct)">
           <md-fab-trigger>
-            <pipeline-function transformation="$parent.transformation" function="funct"></pipeline-function>
+            <pipeline-function  transformation="$parent.transformation" function="funct"></pipeline-function>
           </md-fab-trigger>
           <md-fab-actions class="layout-row" ng-if="!$root.readonlymode">
-            <md-button class="md-primary button-tight pipeline-action-icon" aria-label="Preview until this step" ng-click="previewUntilStep(funct)" ng-hide="funct.isPreviewed || !$root.previewmode"> <i class="fa fa-large fa-eye"></i>
+            <md-button  class="md-primary button-tight pipeline-action-icon" aria-label="Preview until this step" ng-click="previewUntilStep(funct)" ng-hide="funct.isPreviewed || !$root.previewmode"> <i class="fa fa-large fa-eye"></i>
               <md-tooltip>Preview until this step</md-tooltip>
             </md-button>
             <md-button class="md-primary button-tight pipeline-action-icon" aria-label="Reset preview" ng-click="closePreviewOfFunction(funct)" ng-show="funct.isPreviewed"> <i class="fa fa-large fa-eye-slash"></i>
@@ -23,7 +24,7 @@
               <i class="fa fa-large fa-plus-circle"></i>
               <md-tooltip>Add new pipeline function after the current</md-tooltip>
             </md-button>
-            <md-button class="md-primary button-tight pipeline-action-icon" aria-label="Remove pipeline step" ng-click="clickRemove(funct)">
+            <md-button class="md-primary button-tight pipeline-action-icon" aria-label="Remove pipeline step" ng-click="clickRemove(funct)"  ng-disabled="hideUploadDatasetFunction(funct)">
               <i class="fa fa-large fa-minus-circle"></i>
               <md-tooltip>Remove the current pipeline function</md-tooltip>
             </md-button>
@@ -33,11 +34,11 @@
     </div>
   </div>
   <div ng-if="$root.readonlymode">
-    <div ng-repeat="funct in pipeline.functions" layout="row" layout-align="center">
+    <div ng-repeat="funct in pipeline.functions"  ng-if="$index > 0"   layout="row" layout-align="center">
       <pipeline-function transformation="$parent.transformation" function="funct"></pipeline-function>
     </div>
   </div>
-  <div layout="row" layout-align="center" ng-hide="pipeline.functions.length!=0 || $root.readonlymode">
+  <div layout="row" layout-align="center" ng-hide="(pipeline.functions.length > 1) || (pipeline.functions.length === 1 && pipeline.functions[0].__type!== 'UploadDatasetFunction') || $root.readonlymode">
     <md-button class="md-primary button-not-tight" aria-label="Add pipeline step" ng-click="clickAddAfter(null)">
       <i class="fa fa-large fa-plus-circle"></i>
     </md-button>

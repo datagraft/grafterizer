@@ -20,6 +20,8 @@ angular.module('grafterizerApp')
             transformationDataModel,
             datagraftPostMessage) {
   
+
+  $scope.developmentMode = !!window.location.port;     
   var paginationSize = 100;
 
   $scope.$on('$stateChangeSuccess', function(event, toState, toParams, fromState, fromParams){
@@ -114,6 +116,7 @@ angular.module('grafterizerApp')
     });
   }
 
+
   $scope.$watch('livePreview', function(newValue, oldValue) {
     if (newValue === true && oldValue === false) {
       previewTransformation(false);
@@ -149,7 +152,7 @@ angular.module('grafterizerApp')
   });
 
   var currentOriginalPage = 0;
-  $scope.loadOriginalData = function() {
+  /*$scope.loadOriginalData = function() {
     if ($scope.originalData) return;
 
     if ($scope.selectedDistribution) {
@@ -159,8 +162,20 @@ angular.module('grafterizerApp')
       });
     }
   };
+    */
+        $scope.loadOriginalData = function () {
+            var uploadDatasetFunction = _.get($scope.$parent.transformation, 'pipelines[0].functions[0]'); // original data is created out of read-dataset
+          if (!uploadDatasetFunction) return;
+          var clojure = '(def make-graph (graph-fn [{:keys []}])) (defpipe my-pipe [data-file] (-> ' + uploadDatasetFunction.generateClojure().ednEncode() + '))';
+          if ($scope.selectedDistribution) {
+            PipeService.preview($scope.selectedDistribution, clojure, 0, paginationSize)
+              .then(function (data) {
+                $scope.originalData = data;
+              });
+          }
+        };
 
-  $scope.loadMorePreview = function(callback) {
+ /* $scope.loadMorePreview = function(callback) {
     if (!savedGeneratedClojure) return;
     PipeService.preview($scope.selectedDistribution,
                         savedGeneratedClojure,
@@ -176,9 +191,26 @@ angular.module('grafterizerApp')
     function() {
       callback(true);
     });
-  };
+  };*/
+     $scope.loadMorePreview = function (callback) {
+            if (!savedGeneratedClojure) return;
+            PipeService.preview($scope.selectedDistribution
+                    , savedGeneratedClojure
+                    , ++currentPreviewPage, paginationSize)
+                .then(function (data) {
+                        if ($scope.data && $scope.data.edn && data && data.edn) {
+                            callback(undefined, data.edn);
+                        } else {
+                            callback(true);
+                        }
+                    },
 
-  $scope.loadMoreOriginal = function(callback) {
+                    function () {
+                        callback(true);
+                    });
+        };
+    
+ /* $scope.loadMoreOriginal = function(callback) {
     if ($scope.selectedDistribution) {
       PipeService.original($scope.selectedDistribution, ++currentOriginalPage, paginationSize)
         .then(function(data) {
@@ -193,7 +225,26 @@ angular.module('grafterizerApp')
         callback(true);
       });
     }
-  };
+  };*/
+            $scope.loadMoreOriginal = function (callback) {
+          if ($scope.selectedDistribution) {
+            var uploadDatasetFunction = _.get($scope.$parent.transformation, 'pipelines[0].functions[0]'); // original data is created out of read-dataset
+            if (!uploadDatasetFunction) return;
+            var clojure = '(def make-graph (graph-fn [{:keys []}])) (defpipe my-pipe [data-file] (-> ' + uploadDatasetFunction.generateClojure().ednEncode() + '))';
+            PipeService.preview($scope.selectedDistribution, clojure, ++currentOriginalPage, paginationSize)
+              .then(function (data) {
+                  if (data && data.edn) {
+                    callback(undefined, data.edn);
+                  } else {
+                    callback(true);
+                  }
+                },
+                function () {
+                  callback(true);
+                });
+          }
+        };
+
 
   // If it's an upwizards distribution, it means grafterizer is used
   // inside the Datagraft widget, and therefore, should provide the next step
@@ -231,4 +282,5 @@ angular.module('grafterizerApp')
     };
   }
 
-});
+
+    });

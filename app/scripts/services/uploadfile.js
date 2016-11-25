@@ -1,5 +1,4 @@
 'use strict';
-
 /**
  * @ngdoc service
  * @name grafterizerApp.uploadFile
@@ -8,8 +7,8 @@
  * Service in the grafterizerApp.
  */
 angular.module('grafterizerApp')
-  .service('uploadFile', function(backendService) {
-    this.upload = function(file, finalCallback) {
+  .service('uploadFile', function (backendService) {
+    this.upload = function (file, finalCallback) {
       backendService.uploadDistribution(file, {
         title: 'previewed_dataset_' + file.name,
         description: 'File uploaded from Grafterizer in preview mode'

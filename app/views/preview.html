@@ -19,6 +19,12 @@
                         <i class="fa fa-step-forward"></i>
                         <md-tooltip>Submit and go to the next step in the wizard</md-tooltip>
                     </md-button>
+             <div class="toggles" ng-click="showFlags=!showFlags">           
+    <md-button class="md-fab md-primary sin-fa-button" aria-label="Show flags" ng-click="$root.showFlags=!$root.showFlags" ng-show="developmentMode">
+        <i class="fa fa-toggle-on"></i>
+    <md-tooltip>Feature toggler</md-tooltip>
+    </md-button>
+                    </div>
                     <md-button class="md-fab md-primary sin-fa-button" aria-label="Transform the data" ng-click="download()">
                         <i class="fa fa-cogs"></i>
                         <md-tooltip>Transform data</md-tooltip>

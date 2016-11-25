@@ -128,6 +128,12 @@ angular.module('grafterizerApp')
             name: 'grep',
             selected: false,
             type: 'rows'
+          },
+          {
+            displayName: 'Reads the input data for the data transformation. \n Cannot be moved or removed',
+            name: 'upload-dataset',
+            selected: false,
+            type: 'none'
           }
         ];
 

@@ -18,7 +18,7 @@
             <div layout="row">
                 <!-------------------------CREATE NEW DATA/FILE PAGE------------------------------------------->
 
-                <div class="md-padding" flex-gt-sm="33" layout="column" ng-show="showMapRDFButton">
+                <div class="md-padding" flex-gt-sm="33" layout="column" ng-show="showMapRDFButton && distribution">
                      
 
       <h4 class="md-title">Execute and save</h4>
@@ -119,7 +119,7 @@
         <!-----------------------------------------ORIGINAL------------------------------------------------------->
                 <md-dialog-content feature-flag="filetypeToggling" feature-flag-hide layout="row" layout-sm="column" class="sticky-container" layout-align="center">
         <md-dialog-content layout="row" layout-sm="column" class="sticky-container" layout-align="center">
-    <div class="md-padding" flex-gt-sm="33" layout="column" ng-show="showMapRDFButton">
+    <div class="md-padding" flex-gt-sm="33" layout="column" ng-show="showMapRDFButton && distribution">
       <h4 class="md-title">Execute and save</h4>
       <p class="md-caption">Execute the transformation on the dataset and save the results in an existing  sparql endpoint. This may take a few minutes.</p>
       <md-progress-circular style="margin: 30px auto 0px auto;" ng-if="processing" md-mode="indeterminate"></md-progress-circular>

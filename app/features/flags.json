@@ -12,10 +12,10 @@
         "description": "Allows to perform tabular transformations directly on the preview table"
     },
     {
-        "key": "shapefiles",
+        "key": "input-formatter",
         "active": false,
-        "name": "Shapefile upload",
-        "description": "Allows to upload shapefiles, converting them to csv on fly"
+        "name": "Advanced file upload",
+        "description": "Allows to upload shapefiles, excel files, various delimiter-separated files"
     },
     {
         "key": "audit",

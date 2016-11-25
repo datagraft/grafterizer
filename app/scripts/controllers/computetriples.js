@@ -73,16 +73,20 @@ angular.module('grafterizerApp')
                 $scope.type = 'graft';
             }
             $scope.downloadLink = PipeService.computeTuplesHref(
-                $scope.distribution, $scope.transformation, $scope.type);
+                $scope.distribution, $scope.transformation, $scope.type, 'nt');
         } else {
             $scope.type = 'pipe';
             if (typeof $scope.outRDF === 'undefined') 
             {
-            if ($rootScope.transformation.graphs && $rootScope.transformation.graphs.length !== 0) $scope.outRDF = false;   
+            if ($rootScope.transformation.graphs && $rootScope.transformation.graphs.length !== 0) {
+                $scope.outRDF = true;
+                $scope.RDFformat = 'N-Triples (.nt)';
+            } else {$scope.outRDF = false;   }
             }
             $scope.downloadLink = PipeService.computeTuplesHref(
                 $scope.distribution, $scope.transformation, $scope.type, 'nt');
             $scope.$watch('outRDF', function (value) {
+                
                 $scope.outRDF = value;
                 if (value) {
                     if ($rootScope.transformation.graphs &&
@@ -91,8 +95,9 @@ angular.module('grafterizerApp')
                         $scope.type = 'graft';
                     }
                 }
+     
                    $scope.downloadLink = PipeService.computeTuplesHref(
-                    $scope.distribution, $scope.transformation, value ? $scope.type : 'pipe', 'nt');
+                    $scope.distribution, $scope.transformation, value ? $scope.type : 'pipe', $scope.RDFformat[0].format );
                 console.log(value);
                 console.log($scope.type);
             });

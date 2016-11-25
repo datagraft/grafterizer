@@ -48,6 +48,7 @@ module.exports = function(config) {
       'bower_components/angular-mocks/angular-mocks.js',
       'bower_components/oi.select/dist/select-tpls.min.js',
       'bower_components/angular-feature-flags/dist/featureFlags.js',
+      'bower_components/js-xlsx/dist/xlsx.js',
       // endbower
       'app/scripts/**/*.js',
       'test/mock/**/*.js',
