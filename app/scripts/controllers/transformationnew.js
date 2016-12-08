@@ -402,7 +402,7 @@ new transformationDataModel.CustomFunctionDeclaration('fill-when', '(defn fill-w
                 formatterFlag = $rootScope.flags[i].active;
                 break;
             }
-        console.log(formatterFlag);
+
       if ($scope.fileUpload) { 
  
         var callback = function(data) { 

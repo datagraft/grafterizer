@@ -108,6 +108,7 @@
         </div>
         <div>
         <h3>Parameters</h3>
+            <div layout="column">
         <label>Column name</label>
         <oi-select ng-show="colnames.length !== 0" oi-options="column.value for column in colnames track by column.value" ng-model="function.colName" ng-disabled="$root.readonlymode"></oi-select>
         <oi-select ng-show="colnames.length === 0" oi-options="column.value for column in []" ng-model="function.colName" oi-select-options="{newItem: true, newItemFn: 'addColumn($query)'}" ng-disabled="$root.readonlymode"></oi-select>
@@ -116,10 +117,11 @@
         <label>Separator</label>
         <input ng-model="function.separator" ng-trim="false" type="text" required ng-readonly="$root.readonlymode">
     </md-input-container>
-    <md-input-container flex>
+    <md-input-container class="md-block" flex>
         <label>Comment</label>
 
         <input ng-model="function.docstring" type="text" ng-readonly="$root.readonlymode">
     </md-input-container>
+            </div>
 </div>
 </div>

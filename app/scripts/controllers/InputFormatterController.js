@@ -28,6 +28,7 @@ angular.module('grafterizerApp')
             $scope.selectedSheet,
             $scope.extension,
             'Reads the input data for the data transformation. \n Cannot be moved or removed');
+          console.log(uploadFunction);
           if  ($scope.transformation.pipelines[0].functions.length!==0 && $scope.transformation.pipelines[0].functions[0].__type !== "UploadDatasetFunction" )
               {$scope.transformation.pipelines[0].functions.splice(0,0,uploadFunction);}
           else
@@ -81,6 +82,7 @@ angular.module('grafterizerApp')
         var ex = reader.readAsBinaryString(file);
         reader.onload = function (e) {
           var data = e.target.result;
+            console.log("beforeRead");
           $scope.workbook = XLSX.read(data, {type: 'binary'});
           $scope.sheetNames = $scope.workbook.SheetNames;
           $scope.selectedSheet = $scope.sheetNames[0];

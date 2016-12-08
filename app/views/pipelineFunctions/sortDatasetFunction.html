@@ -139,13 +139,13 @@
            <md-select  flex class = "md-primary md-default-theme" style= "margin-left:20px; min-width:200px" aria-label="sort type" placeholder="{{nametype.sortype?nametype.sorttype:'Choose sorting type'}}" ng-model="nametype.sorttype" ng-disabled="$root.readonlymode">
                <md-option ng-repeat="val in sortTypes"  value = {{val}}>{{val}}</md-option>
                  </md-select>
-            <md-checkbox style="padding-top:15px; margin-left:20px"  ng-model="nametype.order" ng-disabled="$root.readonly.mode"> Reverse order
+            <md-checkbox style="margin-left:20px"  ng-model="nametype.order" ng-disabled="$root.readonly.mode"> Reverse order
             </md-checkbox>
         </div>
     </div>
 
 </div>
-    <md-input-container flex>
+    <md-input-container class="md-block" flex>
         <label>Comment</label>
 
         <input ng-model="function.docstring" type="text" ng-readonly="$root.readonlymode">

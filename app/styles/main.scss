@@ -14,6 +14,16 @@ $gray: rgb(178,178,178);
 }
 
 
+.md-button.md-icon-button {
+    height: 40px;
+    min-width: 0;
+    line-height: 24px;
+    width: 50px;
+    padding: 0px;
+    border-radius: 100%;
+}
+
+
 .menuBtn {
   background-color: transparent;
   border: none;
@@ -31,7 +41,7 @@ $gray: rgb(178,178,178);
   margin-left: 0!important;
 }
 md-toolbar h1 {
-  font-size: 1.250em;
+  font-size: 1.250em;   
   //font-weight: 400;
   //margin: auto;
 }
@@ -203,7 +213,7 @@ md-input-container {
     line-height: 47px;
   }
   .md-toolbar-tools .md-button {
-    margin-left:0;
+    margin-left:20;
     margin-right:0;
   }
   md-switch {
@@ -985,6 +995,7 @@ md-tabs .md-tab {
   min-width: 150px !important;
 }
 
+
 md-toolbar md-input-container .md-input {
   color:white!important;
 
@@ -1025,6 +1036,11 @@ md-toolbar .md-button[type=submit] {
   .md-button {
     padding-left: 30px;
   }
+}
+
+md-checkbox .md-label {
+
+padding-top: 28px; //was null
 }
 
 .flagContainer { position: absolute;  left: -1000px; width: 600px;

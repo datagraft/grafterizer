@@ -16,7 +16,7 @@
 <div ng-model="transformation.graphs" layout="row" class="md-padding">
     <div ng-repeat="graph in transformation.graphs">
         <form name="graphsForm" class="md-padding" >
-            <md-input-container flex class="sin-no-shrink">
+            <md-input-container  class="md-block" class="sin-no-shrink">
                 <label>Graph URI</label>
                 <input ng-model="graph.graphURI" name="graphURI" type="url" required ng-readonly="readonlymode">
                 <div ng-messages="graphsForm.graphURI.$error">
