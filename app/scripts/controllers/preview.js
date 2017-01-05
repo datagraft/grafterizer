@@ -25,14 +25,19 @@ angular.module('grafterizerApp')
   var paginationSize = 100;
 
   $scope.$on('$stateChangeSuccess', function(event, toState, toParams, fromState, fromParams){
+     
     $scope.pathBack = toParams.path_back;
-    if(toParams.distributionId){
-      $scope.$parent.showPreview = true;
-      $rootScope.previewmode = true;
-    } else {
+      
+  
+    if(toParams.distributionId  ){
+     $scope.$parent.showPreview = $rootScope.previewmode; 
+     console.log( $scope.$parent.showPreview);
+        console.log($rootScope.upwizardMode);
+         } else {
       $scope.$parent.showPreview = false;
       $rootScope.previewmode = false;
     }
+      
   });
   
   $scope.livePreview = !(window.sessionStorage && window.sessionStorage.livePreview === 'false');

@@ -1062,7 +1062,6 @@ angular.module('grafterizerApp')
     });
 
     var resultingPipeline = constructPipeline();
-      console.log(resultingPipeline);
     var textStr = '';
 
     if (grafterPrefixers.length) {

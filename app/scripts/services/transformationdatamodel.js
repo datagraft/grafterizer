@@ -687,7 +687,7 @@ angular.module('grafterizerApp')
       values.push(jsedn.sym('data-file'));
       values.push(jsedn.sym(':format'));
       values.push(jsedn.sym(':'+this.extension));
-        console.log(this.extension);
+     
       values.push(jsedn.sym(':sheet'));
       values.push( this.selectedSheet);
     }

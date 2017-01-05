@@ -21,8 +21,21 @@ angular.module('grafterizerApp')
                generateClojure,
                $controller) {
 
+            var formatterFlag = false;
+    for (var i = 0; i < $rootScope.flags.length; ++i)
+            if ($rootScope.flags[i].key === "input-formatter") {
+                formatterFlag = $rootScope.flags[i].active;
+                break;
+            }
+
+
   $scope.$on('$stateChangeSuccess', function (event, toState, toParams, fromState, fromParams) { 
 
+     if (!toParams.distributionId  ){
+         $scope.$parent.showPreview = false;
+      $rootScope.previewmode = false;}
+    
+      
     // TODO FIXME hack to remove element :-(
     var upwizardExtractIDRegex = /^upwizards--(\d+)$/;
     if(toParams.distributionId){
@@ -30,7 +43,45 @@ angular.module('grafterizerApp')
         document.getElementById("upload-menu").style.display = "none";
       }
     }
+ 
+      if ($rootScope.upwizardMode) {
+
+          if (formatterFlag) {
+      $mdDialog.show({
+        templateUrl: 'views/inputformatteruploaded.html',
+        controller: 'InputFormatterUploadedController',
+        scope: $scope.$new(false, $scope),
+        state: $state,
+        transformationDataModel: transformationDataModel,
+        rootScope: $rootScope,
+        clickOutsideToClose: false
+      });
+            
+      }
+        else {
+           var uploadFunction = new transformationDataModel.UploadDatasetFunction(
+                "CSV",
+                 ["CSV", "Excel", "Shape"/*, "JSON"*/],
+                ",",
+                null,
+                null,
+                "csv",
+                'Reads the input data for the data transformation. \n Cannot be moved or removed');
+          if  ($scope.transformation.pipelines[0].functions.length!==0 && $scope.transformation.pipelines[0].functions[0].__type !== "UploadDatasetFunction" )
+              {$scope.transformation.pipelines[0].functions.splice(0,0,uploadFunction);}
+          else
+           {
+          $scope.transformation.pipelines[0].functions[0] // always the first step is read dataset
+          =uploadFunction;
+               $rootScope.previewmode = true;
+          }
+          
+        }
+        
+                }
   });
+
+
   var customfunctions = [
     new transformationDataModel.CustomFunctionDeclaration(
       'replace-varible-string',
@@ -268,14 +319,7 @@ angular.module('grafterizerApp')
   }).error(loadEmptyTransformation);
 
 
-        var formatterFlag = false;
-    for (var i = 0; i < $rootScope.flags.length; ++i)
-            if ($rootScope.flags[i].key === "input-formatter") {
-                formatterFlag = $rootScope.flags[i].active;
-                break;
-            }
-   
-    
+
     
   $scope.$watch('rejectedFileUpload', function() {
 
@@ -292,14 +336,10 @@ angular.module('grafterizerApp')
 
   $scope.$watch('fileUpload', function() {
 
-        var formatterFlag = false;
-    for (var i = 0; i < $rootScope.flags.length; ++i)
-            if ($rootScope.flags[i].key === "input-formatter") {
-                formatterFlag = $rootScope.flags[i].active;
-                break;
-            }
+ 
     if ($scope.fileUpload) {
       if ($rootScope.readonlymode || $rootScope.upwizardMode) {
+   
         $mdToast.show(
           $mdToast.simple()
           .content($scope.loading ?
@@ -320,7 +360,7 @@ angular.module('grafterizerApp')
         });
       };
         
-console.log(formatterFlag);
+
       if (formatterFlag) {
       $mdDialog.show({
         templateUrl: 'views/inputformatter.html',
@@ -353,6 +393,7 @@ console.log(formatterFlag);
          
          uploadFile.upload($scope.fileUpload, callback);   
         }
+           $rootScope.previewmode = true;
     }
   });
 

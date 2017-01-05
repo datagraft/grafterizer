@@ -20,13 +20,13 @@
               <md-option value="dataset-col">From dataset column</md-option>
               <md-option value="free-defined">Free-defined text</md-option>
             </md-select>
-            <md-input-container flex ng-if="dialogState.mappingType=='dataset-col'">
-              <label>Select node prefix</label>
+            <md-input-container md-no-float class="md-block"  flex ng-if="dialogState.mappingType=='dataset-col'">
+              <!--label>Select node prefix</label-->
               <!--input ng-model="nodeCurrentState.prefix" type="text"-->
-              <oi-select oi-options="prefix.value for prefix in prefixes() track by prefix.id" oi-select-options="{newItem: true, newItemFn: 'addPref($query)'}" ng-model="nodeCurrentState.prefix" ng-disabled="$root.readonlymode"></oi-select>
+              <oi-select oi-options="prefix.value for prefix in prefixes() track by prefix.id" oi-select-options="{newItem: true, newItemFn: 'addPref($query)'}" ng-model="nodeCurrentState.prefix" ng-disabled="$root.readonlymode" placeholder="Select node prefix"></oi-select>
             </md-input-container>
 
-            <md-input-container flex ng-if="dialogState.mappingType=='dataset-col' && colnames.length !== 0">
+            <md-input-container class="md-block"  flex ng-if="dialogState.mappingType=='dataset-col' && colnames.length !== 0">
               <label>Select column</label>
               <oi-select oi-options="column.value for column in colnames track by column.id" ng-model="nodeCurrentState.column" ng-disabled="$root.readonlymode"></oi-select>
             </md-input-container>

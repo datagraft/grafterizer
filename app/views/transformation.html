@@ -78,10 +78,10 @@
       </md-tab-body>
     </md-tab>
   </md-tabs>
-  <div ng-show="showPreview" flex layout="column">
+  <div ng-show="(!$root.upwizardMode && showPreview) ||($root.upwizardMode&&$root.previewmode)" flex layout="column">
     <div layout="column" flex ui-view="preview" autoscroll="false"></div>
   </div>
-  <resize-hand for="transformationTabs" ng-if="showPreview"></resize-hand>
+  <resize-hand for="transformationTabs" ng-if="(!$root.upwizardMode && showPreview) ||($root.upwizardMode&&$root.previewmode)"></resize-hand>
 </md-content>
 
 <md-fab-speed-dial class="md-fling md-fab-bottom-right" md-direction="left" ng-hide="readonlymode" ng-show="!upwizardMode" id="upload-menu">

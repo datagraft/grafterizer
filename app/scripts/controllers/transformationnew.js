@@ -108,7 +108,12 @@ angular.module('grafterizerApp')
       description: '',
       keywords: []
     };
-
+           var formatterFlag = false;
+    for (var i = 0; i < $rootScope.flags.length; ++i)
+            if ($rootScope.flags[i].key === "input-formatter") {
+                formatterFlag = $rootScope.flags[i].active;
+                break;
+            }
   var customfunctions = [
     new transformationDataModel.CustomFunctionDeclaration(
       'replace-varible-string',
@@ -396,12 +401,7 @@ new transformationDataModel.CustomFunctionDeclaration('fill-when', '(defn fill-w
     
       
     $scope.$watch('fileUpload', function() { 
-          var formatterFlag = false;
-    for (var i = 0; i < $rootScope.flags.length; ++i)
-            if ($rootScope.flags[i].key === "input-formatter") {
-                formatterFlag = $rootScope.flags[i].active;
-                break;
-            }
+
 
       if ($scope.fileUpload) { 
  
@@ -436,6 +436,7 @@ new transformationDataModel.CustomFunctionDeclaration('fill-when', '(defn fill-w
            {
           $scope.transformation.pipelines[0].functions[0] // always the first step is read dataset
           =uploadFunction;
+                       $rootScope.previewmode = true;
           }
          
          uploadFile.upload($scope.fileUpload, callback);   

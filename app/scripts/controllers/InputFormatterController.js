@@ -10,7 +10,7 @@
 angular.module('grafterizerApp')
   .controller('InputFormatterControler', function ($scope, uploadFile, $mdDialog, transformationDataModel,$state, $rootScope, callback) {
 
-
+if ($rootScope.previewmode === undefined)  $rootScope.previewmode = false;
       $scope.typeList = ["CSV", "Excel", "Shape"/*, "JSON"*/];
 
       $scope.selectedType = getFileType($scope.$parent.fileUpload);
@@ -28,7 +28,6 @@ angular.module('grafterizerApp')
             $scope.selectedSheet,
             $scope.extension,
             'Reads the input data for the data transformation. \n Cannot be moved or removed');
-          console.log(uploadFunction);
           if  ($scope.transformation.pipelines[0].functions.length!==0 && $scope.transformation.pipelines[0].functions[0].__type !== "UploadDatasetFunction" )
               {$scope.transformation.pipelines[0].functions.splice(0,0,uploadFunction);}
           else
@@ -40,6 +39,7 @@ angular.module('grafterizerApp')
           
         $rootScope.transformation = $scope.transformation;
         uploadProcessedFile($scope.$parent.fileUpload);
+             $rootScope.previewmode = true;
         $mdDialog.hide();
       };
 

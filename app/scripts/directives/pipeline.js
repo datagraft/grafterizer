@@ -20,7 +20,6 @@ angular.module('grafterizerApp')
       // if (!scope.pipeline) {
       //scope.pipeline = new transformationDataModel.Pipeline([]);
       // }
-      console.log(scope.pipeline);
       scope.hideUploadDatasetFunction = function(funct)
       {
         return funct.name =="upload-dataset" ? true : false;
