@@ -64,7 +64,7 @@
                           <div layout="row" ng-show="$parent.outRDF" style="margin-top: -30px">
                         <h4 style="margin-top: 30px">RDF format:</h6> 
                     <md-select  flex class = "md-primary md-default-theme" style= "margin-left:20px;" aria-label="rdf serialization" placeholder="{{RDFformats[0].description}}" ng-model="$parent.RDFformat">
-                        <md-option  ng-repeat="format in RDFformats" >{{format.description}}</md-option>
+                        <md-option  ng-repeat="format in RDFformats" ng-value = "format.format" >{{format.description}}</md-option>
                     </md-select>
                 </div>
       

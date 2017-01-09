@@ -60,7 +60,7 @@ angular.module('grafterizerApp')
                 filetypeFlag = $rootScope.flags[i].active;
                 break;
             }
-        console.log(filetypeFlag);
+
     
     $scope.distribution = $stateParams.distributionId;
 
@@ -76,13 +76,17 @@ angular.module('grafterizerApp')
                 $scope.distribution, $scope.transformation, $scope.type, 'nt');
         } else {
             $scope.type = 'pipe';
+          
             if (typeof $scope.outRDF === 'undefined') 
             {
             if ($rootScope.transformation.graphs && $rootScope.transformation.graphs.length !== 0) {
                 $scope.outRDF = true;
-                $scope.RDFformat = 'N-Triples (.nt)';
+               $scope.RDFformat = 'nt';
             } else {$scope.outRDF = false;   }
             }
+               if (typeof $scope.RDFformat === 'undefined') 
+$scope.RDFformat = 'nt';
+            console.log($scope.RDFformat);
             $scope.downloadLink = PipeService.computeTuplesHref(
                 $scope.distribution, $scope.transformation, $scope.type, 'nt');
             $scope.$watch('outRDF', function (value) {
@@ -97,19 +101,22 @@ angular.module('grafterizerApp')
                 }
      
                    $scope.downloadLink = PipeService.computeTuplesHref(
-                    $scope.distribution, $scope.transformation, value ? $scope.type : 'pipe', $scope.RDFformat[0].format );
-                console.log(value);
-                console.log($scope.type);
+                       
+                    $scope.distribution, $scope.transformation, value ? $scope.type : 'pipe', $scope.RDFformat );
+           
             });
             $scope.$watch('RDFformat', function (value) {
+                console.log(value);
+                
                 if ($scope.type == 'graft') {
-                var rdfFormat;
+                /*var rdfFormat;
                 for (var i = 0; i < $scope.RDFformats.length; ++ i)
-                    if ($scope.RDFformats[i].description === value)
-                        rdfFormat = $scope.RDFformats[i].format;
-                    
+                    if ($scope.RDFformats[i].format === value)
+                        rdfFormat = $scope.RDFformats[i];
+                     console.log( rdfFormat);
+                    console.log( $scope.rdfFormat);*/
                 $scope.downloadLink = PipeService.computeTuplesHref(
-                    $scope.distribution, $scope.transformation, value ? $scope.type : 'pipe', rdfFormat);
+                    $scope.distribution, $scope.transformation, value ? $scope.type : 'pipe', $scope.RDFformat);
                 }
             });
         }
@@ -134,7 +141,7 @@ angular.module('grafterizerApp')
   };
 
     $scope.isRDF = $rootScope.transformation.graphs.length ? $rootScope.transformation.graphs.length : 0;
-    console.log($scope.isRDF);
+
     $scope.downloadJarEndpoint = jarfterService.getJarCreatorStandAloneEndpoint();
     $scope.transformEndpoint = jarfterService.getTransformStandAloneEndpoint();
 
