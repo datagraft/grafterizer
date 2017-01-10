@@ -461,18 +461,16 @@ angular.module('grafterizerApp')
                    }
                    value = new jsedn.List(convertLiteralValues);
                    break;
-               case 'custom':
-                   if (node.datatypeURI.trim() === '') {
-                       alertInterface('Unspecified URI for custom data type!');
-                   }
-                   else {
-                       value = new jsedn.List([jsedn.sym("s"),
-                                               jsedn.sym(node.literalValue.value),
-                                               new jsedn.List([jsedn.sym("org.openrdf.model.impl.URIImpl."), node.datatypeURI])]);
-                   }
-                   break;
-               default:
-                   var convertLiteralValues = [jsedn.sym("datatypes/convert-literal"),jsedn.sym(node.literalValue.value), node.datatype.name];
+               case 'byte':
+               case 'short':   
+               case 'integer':    
+                   case 'long':
+                   case 'decimal':
+                   case 'float':
+                   case 'double':
+                   case 'boolean':
+                   case 'datetime':
+                    var convertLiteralValues = [jsedn.sym("datatypes/convert-literal"),jsedn.sym(node.literalValue.value), (node.datatype.name==='datetime')?'date':node.datatype.name];
 
                    if (node.onEmpty) {
                        convertLiteralValues.push(jsedn.kw(":on-empty"));
@@ -484,7 +482,18 @@ angular.module('grafterizerApp')
                    }
                    value = new jsedn.List(convertLiteralValues);
                    break;
-
+                   
+               default:
+                   if (node.datatypeURI.trim() === '') {
+                       alertInterface('Unspecified URI for custom data type!');
+                   }
+                   else {
+                       value = new jsedn.List([jsedn.sym("s"),
+                                               jsedn.sym(node.literalValue.value),
+                                               new jsedn.List([jsedn.sym("org.openrdf.model.impl.URIImpl."), node.datatypeURI])]);
+                   }
+                   break;
+               
            }
        }
 

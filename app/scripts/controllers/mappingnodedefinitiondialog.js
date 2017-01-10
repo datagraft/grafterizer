@@ -231,7 +231,7 @@ angular.module('grafterizerApp')
 
     {
         id:8,
-        name:'date'
+        name:'datetime'
     },
     {
         id:9,
@@ -240,6 +240,123 @@ angular.module('grafterizerApp')
     {
         id:10,
         name:'custom'
+    },
+       
+            {
+        id:11,
+        name:'date'
+    },
+          {
+        id:12,
+        name:'time'
+    },
+         {
+        id:13,
+        name:'dateTimeStamp'
+    },
+         {
+        id:14,
+        name:'gYear'
+    },
+         {
+        id:15,
+        name:'gMonth'
+    },
+          {
+        id:16,
+        name:'gDay'
+    },
+            {
+        id:17,
+        name:'gYearMonth'
+    },
+            {
+        id:18,
+        name:'gMonthDay'
+    },
+         {
+        id:19,
+        name:'duration'
+    },
+         {
+        id:20,
+        name:'yearMonthDuration'
+    },
+         {
+        id:21,
+        name:'dayTimeDuration'
+    },
+        {
+        id:22,
+        name:'int'
+    },
+        {
+        id:23,
+        name:'unsignedByte'
+    },
+         {
+        id:24,
+        name:'unsignedShort'
+    },
+         {
+        id:25,
+        name:'unsignedInt'
+    },
+          {
+        id:26,
+        name:'unsignedLong'
+    },
+          {
+        id:27,
+        name:'positiveInteger'
+    },
+           {
+        id:28,
+        name:'nonNegativeInteger'
+    },
+          {
+        id:29,
+        name:'negativeInteger'
+    },
+        {
+        id:30,
+        name:'nonPositiveInteger'
+    },
+        {
+        id:31,
+        name:'hexBinary'
+    },
+        {
+        id:32,
+        name:'base64Binary'
+    },
+         {
+        id:33,
+        name:'anyURI'
+    },
+        {
+        id:34,
+        name:'language'
+    },
+        {
+        id:35,
+        name:'normalizedString'
+    },
+        {
+        id:36,
+        name:'token'
+    },
+         {
+        id:37,
+        name:'NMTOKEN'
+    },
+         {
+        id:38,
+        name:'Name'
+    },
+         {
+        id:39,
+        name:'NCName'
     }
     ];
 var colCtr = 0;
@@ -257,6 +374,16 @@ $scope.addPref = function(query) {
         value: query
     };
 };
+    $scope.$watch('nodeCurrentState.datatype',
+                  function(value)
+                 {
+        if (value) {
+        if (value.id > 10) 
+        $scope.nodeCurrentState.datatypeURI = "http://www.w3.org/2001/XMLSchema#" + value.name;
+        console.log($scope.nodeCurrentState.datatypeURI);
+        }
+            
+    });
   $scope.changeType = function() {
 
     switch ($scope.dialogState.selectedTab) {
@@ -288,7 +415,7 @@ $scope.addPref = function(query) {
           if ($scope.nodeCurrentState.__type !== 'ColumnLiteral') {
               $scope.nodeCurrentState = new transformationDataModel.ColumnLiteral(      
               ($scope.nodeCurrentState.literalValue && $scope.nodeCurrentState.literalValue.value ? $scope.nodeCurrentState.literalValue.value : ''),
-              ($scope.columnLiteralHasDatatype ? $scope.nodeCurrentState.datatype : {name: 'unspecified', id: 0}),
+              ($scope.columnLiteralHasDatatype ? $scope.nodeCurrentState.datatype : {name: 'string', id: 9}),
               $scope.nodeCurrentState.onEmpty,
               $scope.nodeCurrentState.onError,
               ($scope.nodeCurrentState.langTag ? $scope.nodeCurrentState.langTag : ''),
@@ -330,7 +457,7 @@ $scope.addPref = function(query) {
   };
         
   $scope.addNode = function() {
-           
+               
       var conditions = [];
       for (var i = 0; i < $scope.propertyValue.condition.length; ++i) {
           if (!($scope.propertyValue.condition[i].column === null && $scope.propertyValue.condition[i].operator.id === 0)) {
@@ -342,9 +469,10 @@ $scope.addPref = function(query) {
           }
       }
       $scope.nodeCurrentState.nodeCondition = conditions;
-      
+      console.log($scope.nodeCurrentState.__type);
        //if (!$scope.columnLiteralHasDatatype)   $scope.nodeCurrentState.datatype = {name: 'unspecified', value: 0};
     if ($scope.nodeCurrentState.__type === 'ConstantURI') {
+          
       if ($scope.isProbablyUri($scope.propertyValue.value)) {
         // probably an outright URI - we put the whole URI in there
         $scope.nodeCurrentState.prefix = '';
@@ -371,8 +499,18 @@ $scope.addPref = function(query) {
   
     }
 
-    /*else if ($scope.nodeCurrentState.__type === 'ConstantLiteral') {
-    } else if ($scope.nodeCurrentState.__type === 'ColumnLiteral') {
+    else if ($scope.nodeCurrentState.__type === 'ColumnLiteral' && $scope.nodeCurrentState.datatypeURI) {
+         if (!$scope.isProbablyUri($scope.nodeCurrentState.datatypeURI))
+             {
+          $mdToast.show(
+            $mdToast.simple()
+            .content('Error: Invalid datatype uri. Please use a valid datatype URI (e.g., \'http://www.opengis.net/ont/geosparql#wktLiteral\')')
+            .position('bottom left')
+            .hideDelay(4000)
+          );
+        }
+    } 
+    /*else if ($scope.nodeCurrentState.__type === 'ColumnLiteral') {
     } else if ($scope.nodeCurrentState.__type === 'BlankNode') {
     }*/
 
