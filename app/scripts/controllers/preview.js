@@ -31,8 +31,6 @@ angular.module('grafterizerApp')
   
     if(toParams.distributionId  ){
      $scope.$parent.showPreview = $rootScope.previewmode; 
-     console.log( $scope.$parent.showPreview);
-        console.log($rootScope.upwizardMode);
          } else {
       $scope.$parent.showPreview = false;
       $rootScope.previewmode = false;

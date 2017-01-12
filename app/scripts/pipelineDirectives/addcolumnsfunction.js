@@ -23,6 +23,17 @@ angular.module('grafterizerApp')
           scope.function = newFunction;
         }
 
+        if (scope.function) {  
+            scope.addcolumnsmode = [];
+            for (var i=0; i< scope.function.columnsArray.length; ++i)
+                {
+                    if (scope.function.columnsArray[i].colValue)
+                        scope.addcolumnsmode.splice(i,0,'value');
+                    else
+                        scope.addcolumnsmode.splice(i,0,'expression');
+                }
+        }
+          
         scope.newColumnValues = ['Dataset filename', 'Current date', 'Row number', 'custom expression'];
         scope.$parent.generateCurrFunction = function() {
           return new transformationDataModel.AddColumnsFunction(

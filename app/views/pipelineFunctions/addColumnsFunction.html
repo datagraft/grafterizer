@@ -12,27 +12,34 @@
     <h3>Parameters</h3>
     <p>Columns to add</p>
     <div layout="column" ng-repeat="columnSpec in function.columnsArray">
+           
       <div layout="row">
         <md-button class="md-primary button-tight md-default-theme" ng-disabled="function.columnsArray.length === 1 || $root.readonlymode" ng-click="removeColumn($index)" aria-label="Remove column"> <i class="fa fa-trash fa-lg"></i>
         </md-button>
         <md-input-container flex>
           <label>Name of new column</label>
           <input ng-model="columnSpec.colName" type="text" required ng-readonly="$root.readonlymode"></md-input-container>
-        <md-input-container flex>
+        
+      </div>
+         <md-radio-group ng-model="addcolumnsmode[$index]" readonly="$root.readonlymode">
+      <md-radio-button value="value">Text value</md-radio-button>
+      <md-radio-button value="expression">Expression</md-radio-button>
+      
+    </md-radio-group>
+        <md-input-container ng-show = "addcolumnsmode[$index]==='value'" flex>
           <label>Value</label>
           <input ng-model="columnSpec.colValue" ng-disabled="columnSpec.specValue" type="text" ng-readonly="$root.readonlymode" />
         </md-input-container>
-      </div>
-      <div layout="row">
+      <div layout="row" ng-show="addcolumnsmode[$index]==='expression'">
         <md-input-container flex>
           <md-select ng-disabled="columnSpec.colValue" aria-label="new column expression" placeholder="{{columnSpec.specValue?columnSpec.specValue:'Choose expression type'}}" ng-model="columnSpec.specValue" ng-disabled="$root.readonlymode">
             <md-option ng-repeat="val in newColumnValues"  value = {{val}}>{{val}}</md-option>
           </md-select>
 
         </md-input-container>
-        <md-input-container ng-if="columnSpec.specValue==='custom expression'"  flex>
+        <md-input-container style=  "padding-top:17px;" ng-if="columnSpec.specValue==='custom expression'"  flex>
           <label>Expression</label>
-          <input ng-model="columnSpec.expression" type="text"  ng-readonly="$root.readonlymode"/>
+          <input  ng-model="columnSpec.expression" type="text"  ng-readonly="$root.readonlymode"/>
         </md-input-container>
       </div>
     </div>
