@@ -9,9 +9,13 @@
         </div>
         </div>
         <h3 style="padding-left: 20px;">Parameters</h3>
-        <div class="whiteframedemoBasicUsage" layout="row"  style="padding-bottom: 32px;">
-        <div>
-        <md-whiteframe  class="md-whiteframe-z1" layout="column" layout-align="left ">
+    
+    <md-radio-group ng-model="renamecolumnsmode" readonly="$root.readonlymode">
+      <md-radio-button value="function">Transform with function</md-radio-button>
+      <md-radio-button value="map">Map values</md-radio-button> 
+    </md-radio-group>
+    
+        <div ng-show="renamecolumnsmode==='function'">
             <p> Transform current column names </p>
 <div   ng-repeat="renameFunction in function.functionsToRenameWith track by $index ">
     <div >
@@ -27,12 +31,10 @@
 
 
 </div>
-        <md-button class="md-raised" ng-click="addRenameFunction()" aria-label="Compose with function" ng-disabled="$root.readonlymode">Compose with </md-button>
-</md-whiteframe>
-</div>
-
-        <div>
-        <md-whiteframe  class="md-whiteframe-z1" layout="column" layout-align="left ">
+          
+        <md-button  class="md-raised" ng-click="addRenameFunction()" aria-label="Compose with function" ng-disabled="$root.readonlymode">Compose with </md-button>
+  </div>
+<div ng-show="renamecolumnsmode==='map'">
             <p> Map values </p>
 <div layout="row"  ng-repeat="i in getMapLength(function.mappings.length) ">
     <div layout="row"> 
@@ -50,12 +52,13 @@
                 <input ng-model="function.mappings[i+1]" type="text" required ng-readonly="$root.readonlymode">
             </md-input-container>
         </div>
-    </div>
 
 </div>
+    </div>
 <md-button class="md-raised" ng-click="addRenameMapping()" aria-label="Add mapping pair" ng-disabled="$root.readonlymode">Add mapping pair</md-button>
-</md-whiteframe>
-</div>
+
+
+  
 </div>
     <md-input-container flex>
         <label>Comment</label>

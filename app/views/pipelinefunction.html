@@ -1,6 +1,6 @@
 
-<div class="previewed-pipeline-function-overlay" ng-hide="!function.isPreviewed"></div>
-<md-button class="pipeline-button md-raised" aria-label="Edit pipeline function" ng-click="clickEditFunction()">
+<div class="previewed-pipeline-function-overlay" ng-hide="!function.isPreviewed "></div>
+<md-button ng-hide = "function.__type === 'UploadDatasetFunction'" class="pipeline-button md-raised" aria-label="Edit pipeline function" ng-click="clickEditFunction()">
   {{function.displayName}}
   <md-tooltip>
     {{function.docstring}}

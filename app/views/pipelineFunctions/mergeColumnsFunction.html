@@ -112,7 +112,7 @@
 <div>
 
             <h3>Parameters</h3>
-
+<div layout = "column">
     <label>Columns to merge</label>
         <oi-select ng-show="colnames.length !== 0" oi-options="column.value for column in colnames track by column.id" ng-model="function.colsToMerge" multiple ng-disabled="$root.readonlymode"></oi-select>
         <oi-select ng-show="colnames.length === 0" oi-options="column.value for column in []" oi-select-options="{newItem: true, newItemFn: 'addColumn($query)'}" ng-model="function.colsToMerge" multiple ng-disabled="$root.readonlymode"></oi-select>
@@ -127,11 +127,12 @@
     </md-input-container>
 
 
-    <md-input-container flex>
+    <md-input-container class="md-block"  flex>
         <label>Comment</label>
 
         <input ng-model="function.docstring" type="text"  ng-readonly="$root.readonlymode">
     </md-input-container>
+    </div>
 </div>
 
 </div>

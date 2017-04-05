@@ -72,7 +72,7 @@ angular.module('grafterizerApp')
   };
   DropRowsFunction.prototype = Object.create(GenericFunction.prototype);
   DropRowsFunction.prototype.generateClojure = function() {
-    if (this.take === false && this.indexFrom === 0) 
+    if (this.take === false && this.indexFrom === 0)
       return new jsedn.List([jsedn.sym('drop-rows'),this.indexTo]);
     var values = [jsedn.sym('rows')];
     if (this.take) values.push(new jsedn.List([jsedn.sym('range'),
@@ -448,7 +448,7 @@ angular.module('grafterizerApp')
     if (!this.funct) return params;
     if (!this.funct.hasOwnProperty('clojureCode')) return params;
     if (!this.funct.clojureCode) return params;
-    var d = this.funct.clojureCode.match(/\[(.*?)\]/g); 
+    var d = this.funct.clojureCode.match(/\[(.*?)\]/g);
     if (d) {
       d[0]=d[0].replace(/^\[|\]$/g, '');
       params = d[0].split(" ");
@@ -640,6 +640,66 @@ angular.module('grafterizerApp')
   };
   this.GroupRowsFunction = GroupRowsFunction;
 
+  var UploadDatasetFunction = function(selectedType, typeList, delimiter,sheetNames,selectedSheet,extension, docstring) {
+    GenericFunction.call(this);
+    this.name = 'upload-dataset';
+    this.displayName = 'upload-dataset';
+    this.selectedType = selectedType;
+    this.typeList = typeList;
+    this.delimiter = delimiter;
+    this.sheetNames = sheetNames;
+    this.selectedSheet = selectedSheet;
+    this.extension = extension;
+
+    this.__type = 'UploadDatasetFunction';
+    if (!docstring) {
+      this.docstring = 'Reads the input data for the data transformation \n Cannot be moved or removed';
+    } else{
+      this.docstring = docstring;
+    }
+
+  };
+  UploadDatasetFunction.revive = function(data) {
+    return new UploadDatasetFunction(data.selectedType, data.typeList, data.delimiter, data. sheetNames, data.selectedSheet,data.extension, data.docstring);
+  };
+  UploadDatasetFunction.prototype = Object.create(GenericFunction.prototype);
+  UploadDatasetFunction.prototype.generateClojure = function() {
+    var values = [];
+
+    if(this.selectedType=="CSV")
+    {
+      values.push(jsedn.sym('read-dataset'));
+      values.push(jsedn.sym('data-file'));
+      values.push(jsedn.sym(':format'));
+      values.push(jsedn.sym(':csv'));
+      values.push(jsedn.sym(':separator'));
+      if(this.delimiter=="tab" || this.delimiter=="t")
+      {
+        values.push(jsedn.sym('\\tab'));
+      }
+      else{
+      values.push( new jsedn.List([jsedn.sym('first'), new jsedn.List([jsedn.sym('char-array'), this.delimiter])]));
+      }
+    }
+    else if(this.selectedType=="Excel" && this.selectedSheet)
+    {
+      values.push(jsedn.sym('read-dataset'));
+      values.push(jsedn.sym('data-file'));
+      values.push(jsedn.sym(':format'));
+      values.push(jsedn.sym(':'+this.extension));
+     
+      values.push(jsedn.sym(':sheet'));
+      values.push( this.selectedSheet);
+    }
+    else if(this.selectedType=="Shape")
+    {
+      values.push(jsedn.sym('read-shape-csv'));
+      values.push(jsedn.sym('data-file'));
+    }
+
+    return new jsedn.List(values);
+  };
+  this.UploadDatasetFunction = UploadDatasetFunction;
   var RenameColumnsFunction = function(functionsToRenameWith, mappings, docstring) {
     GenericFunction.call(this);
     this.name = 'rename-columns';
@@ -767,7 +827,7 @@ angular.module('grafterizerApp')
     var params = [];
     if (!this.func.hasOwnProperty('clojureCode')) return params;
     if (!this.func.clojureCode) return params;
-    var d = this.func.clojureCode.match(/\[(.*?)\]/g); 
+    var d = this.func.clojureCode.match(/\[(.*?)\]/g);
     if (d) {
       d[0]=d[0].replace(/^\[|\]$/g, '');
       params = d[0].split(" ");
@@ -1184,14 +1244,14 @@ angular.module('grafterizerApp')
           }
 
           return new jsedn.List([jsedn.sym('make-dataset'), colNamesClj]);
-        } 
+        }
 
         else return new jsedn.List([jsedn.sym('make-dataset')]);
       }
     } else {
       // make dataset with lazy naming
-      return new jsedn.List([jsedn.sym('make-dataset'), 
-                             new jsedn.List([jsedn.sym('into []'), 
+      return new jsedn.List([jsedn.sym('make-dataset'),
+                             new jsedn.List([jsedn.sym('into []'),
                                              new jsedn.List([jsedn.sym('map'),
                                                              jsedn.sym('keyword'),
                                                              new jsedn.List([jsedn.sym('take'),
@@ -1261,7 +1321,7 @@ angular.module('grafterizerApp')
       return new jsedn.List([jsedn.sym((this.take ? 'columns' : 'new-tabular/remove-columns')), colNamesClj]);
     } else {
       return this.take? new jsedn.List([jsedn.sym('columns'),
-                                        new jsedn.List([jsedn.sym('range'), this.indexFrom, this.indexTo+1])]) : 
+                                        new jsedn.List([jsedn.sym('range'), this.indexFrom, this.indexTo+1])]) :
       new jsedn.List([jsedn.sym('new-tabular/remove-columns'),
                       this.indexFrom, this.indexTo]);
     }
@@ -1366,6 +1426,9 @@ angular.module('grafterizerApp')
         }
         if (funct.__type === 'GroupRowsFunction') {
           functions[i] = GroupRowsFunction.revive(funct);
+        }
+        if (funct.__type === 'UploadDatasetFunction') {
+          functions[i] = UploadDatasetFunction.revive(funct);
         }
         if (funct.__type === 'MergeColumnsFunction') {
           functions[i] = MergeColumnsFunction.revive(funct);
@@ -1573,7 +1636,7 @@ angular.module('grafterizerApp')
     this.column = column;
     this.operator = operator;
     this.operand = operand;
-    this.conj = conj;   
+    this.conj = conj;
     this.__type = 'Condition';
   };
   Condition.revive = function(data) {
@@ -1633,7 +1696,7 @@ angular.module('grafterizerApp')
 
         if (data.propertyCondition.length!==0 && data.propertyCondition !== "") {
 
-          conditions.push(new Condition(null, {"id":6, "name":"Custom code"}, data.propertyCondition.toString(), null)); 
+          conditions.push(new Condition(null, {"id":6, "name":"Custom code"}, data.propertyCondition.toString(), null));
         }
       }
     }
@@ -1662,7 +1725,7 @@ angular.module('grafterizerApp')
       id:0,
       value: data.literalValue
     };
-    var datatype = data.hasOwnProperty('datatype') ? data.datatype : 
+    var datatype = data.hasOwnProperty('datatype') ? data.datatype :
     {
       name:'unspecified',
       id:0
@@ -1719,7 +1782,7 @@ angular.module('grafterizerApp')
           conditions.push(Condition.revive(data.nodeCondition[i]));
         }
       }
-    }    
+    }
     return new BlankNode(conditions, data.subElements);
   };
   this.BlankNode = BlankNode;
@@ -1863,17 +1926,17 @@ angular.module('grafterizerApp')
         if (currFunct.__type === 'MapcFunction') {
           for (var j = 0; j < currFunct.keyFunctionPairs.length; ++j) {
             if (!currFunct.keyFunctionPairs[j].func.hasOwnProperty('name')) {
-              for (var k = 0; k < data.customFunctionDeclarations.length; ++k) { 
+              for (var k = 0; k < data.customFunctionDeclarations.length; ++k) {
                 if (data.customFunctionDeclarations[k].name === currFunct.keyFunctionPairs[j].func) {
                   currFunct.keyFunctionPairs[j].func = {
-                    name: data.customFunctionDeclarations[k].name,                    
-                    group: data.customFunctionDeclarations[k].group, 
+                    name: data.customFunctionDeclarations[k].name,
+                    group: data.customFunctionDeclarations[k].group,
                     id: 0
                   };
                 }
               }
 
-              for (var k = 0; k < data.prefixers.length; ++k) { 
+              for (var k = 0; k < data.prefixers.length; ++k) {
                 if (data.prefixers[k].name === currFunct.keyFunctionPairs[j].func) {
                   currFunct.keyFunctionPairs[j].func = {
                     name: data.prefixers[k].name,
@@ -2068,14 +2131,14 @@ angular.module('grafterizerApp')
 
   };
   this.Transformation = Transformation;
-  
+
   // TODO should this just be a prototype function of every RDFElement?
   var getKeysFromSubs = function(rootNode, subColKeys) {
     for (var i = 0; i < rootNode.subElements.length; ++i) {
       if (rootNode.subElements[i] instanceof ColumnURI)
         if (subColKeys.indexOf(rootNode.subElements[i].column.value) === -1)
           subColKeys.push(rootNode.subElements[i].column.value);
-      if (rootNode.subElements[i] instanceof ColumnLiteral) 
+      if (rootNode.subElements[i] instanceof ColumnLiteral)
 
         if (subColKeys.indexOf(rootNode.subElements[i].literalValue.value) === -1)
           subColKeys.push(rootNode.subElements[i].literalValue.value);

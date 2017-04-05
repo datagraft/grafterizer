@@ -9,29 +9,125 @@
  */
 angular.module('grafterizerApp')
   .controller('ComputetriplesCtrl', function(
-              $scope,
-               $rootScope,
-               $mdDialog,
-               $stateParams,
-               backendService,
-               PipeService,
-               datagraftPostMessage,
-               jarfterService,
-               $sanitize) {
+    $scope,
+    $rootScope,
+    $mdDialog,
+    $stateParams,
+    backendService,
+    PipeService,
+    datagraftPostMessage,
+    jarfterService,
+    $sanitize) {
+      
+ $scope.showMapRDFButton = $rootScope.transformation.graphs && $rootScope.transformation.graphs.length !== 0;
+ $scope.RDFformats = [
+            {
+                format: 'nt'
+                , description: 'N-Triples (.nt)'
+            }
+            
+            , {
+                format: 'rdf'
+                , description: 'RDF/XML (.rdf)'
+            }
+        
+            , {
+                format: 'ttl'
+                , description: 'Turtle (.ttl)'
+            }
+            
+            , {
+                format: 'nq'
+                , description: 'N-Quads (.nq)'
+            }
+            , {
+                format: 'n3'
+                , description: 'N3 (.n3)'
+            }
+            
+            , {
+                format: 'trix'
+                , description: 'TriX (.trix)'
+            }
+            , {
+                format: 'trig'
+                , description: 'TriG (.trig)'
+            },
+        ];
+        var filetypeFlag = false;
+    for (var i = 0; i < $rootScope.flags.length; ++i)
+            if ($rootScope.flags[i].key === "filetypeToggling") {
+                filetypeFlag = $rootScope.flags[i].active;
+                break;
+            }
 
-  $scope.showMapRDFButton = $rootScope.transformation.graphs && $rootScope.transformation.graphs.length !== 0;
-  $scope.distribution = $stateParams.distributionId;
+    
+    $scope.distribution = $stateParams.distributionId;
 
   $scope.transformation = $stateParams.id;
 
-  $scope.type = 'pipe';
-  if ($rootScope.transformation.graphs &&
+     if (!filetypeFlag) {
+            $scope.type = 'pipe';
+            if ($rootScope.transformation.graphs &&
+                $rootScope.transformation.graphs.length !== 0) {
+                $scope.type = 'graft';
+            }
+            $scope.downloadLink = PipeService.computeTuplesHref(
+                $scope.distribution, $scope.transformation, $scope.type, 'nt');
+        } else {
+            $scope.type = 'pipe';
+          
+            if (typeof $scope.outRDF === 'undefined') 
+            {
+            if ($rootScope.transformation.graphs && $rootScope.transformation.graphs.length !== 0) {
+                $scope.outRDF = true;
+               $scope.RDFformat = 'nt';
+            } else {$scope.outRDF = false;   }
+            }
+               if (typeof $scope.RDFformat === 'undefined') 
+$scope.RDFformat = 'nt';
+            console.log($scope.RDFformat);
+            $scope.downloadLink = PipeService.computeTuplesHref(
+                $scope.distribution, $scope.transformation, $scope.type, 'nt');
+            $scope.$watch('outRDF', function (value) {
+                
+                $scope.outRDF = value;
+                if (value) {
+                    if ($rootScope.transformation.graphs &&
+                        $rootScope.transformation.graphs.length !== 0) {
+                        $rootScope.outRDF = true;
+                        $scope.type = 'graft';
+                    }
+                }
+     
+                   $scope.downloadLink = PipeService.computeTuplesHref(
+                       
+                    $scope.distribution, $scope.transformation, value ? $scope.type : 'pipe', $scope.RDFformat );
+           
+            });
+            $scope.$watch('RDFformat', function (value) {
+                console.log(value);
+                
+                if ($scope.type == 'graft') {
+                /*var rdfFormat;
+                for (var i = 0; i < $scope.RDFformats.length; ++ i)
+                    if ($scope.RDFformats[i].format === value)
+                        rdfFormat = $scope.RDFformats[i];
+                     console.log( rdfFormat);
+                    console.log( $scope.rdfFormat);*/
+                $scope.downloadLink = PipeService.computeTuplesHref(
+                    $scope.distribution, $scope.transformation, value ? $scope.type : 'pipe', $scope.RDFformat);
+                }
+            });
+        }
+ /* $scope.type = 'pipe';
+    if ($rootScope.transformation.graphs &&
       $rootScope.transformation.graphs.length !== 0) {
     $scope.type = 'graft';
   }
 
-  $scope.downloadLink = PipeService.computeTuplesHref(
-    $scope.distribution, $scope.transformation, $scope.type);
+    $scope.downloadLink = PipeService.computeTuplesHref(
+      $scope.distribution, $scope.transformation, $scope.type);*/
 
   $scope.lastPreviewDuration = PipeService.getLastPreviewDuration();
   $scope.verySlowMode = $scope.lastPreviewDuration > 25000;
@@ -44,9 +140,10 @@ angular.module('grafterizerApp')
     }, 1);
   };
 
-  $scope.isRDF = $rootScope.transformation.graphs.length ? $rootScope.transformation.graphs.length : 0;
-  $scope.downloadJarEndpoint = jarfterService.getJarCreatorStandAloneEndpoint();
-  $scope.transformEndpoint = jarfterService.getTransformStandAloneEndpoint();
+    $scope.isRDF = $rootScope.transformation.graphs.length ? $rootScope.transformation.graphs.length : 0;
+
+    $scope.downloadJarEndpoint = jarfterService.getJarCreatorStandAloneEndpoint();
+    $scope.transformEndpoint = jarfterService.getTransformStandAloneEndpoint();
 
   $scope.onSubmitDownloadJar = function() {
     $scope.jarfterClojure = jarfterService.generateClojure($rootScope.transformation);

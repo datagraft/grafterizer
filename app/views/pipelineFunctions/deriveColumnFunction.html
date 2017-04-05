@@ -56,10 +56,10 @@
             <a href="http://api.grafter.org/master/grafter.tabular.html#var-derive-column" target="_blank">view source</a>
     </div>
     </div>
-<div>
+<div layout="column">
 
             <h3>Parameters</h3>
-    <md-input-container flex>
+    <md-input-container >
         <label>Name of new column</label>
         <input ng-model="function.newColName" type="text" required ng-readonly="$root.readonlymode">
     </md-input-container>
@@ -108,7 +108,7 @@
 
 </div-->
         <md-button class="md-raised" ng-click="addDeriveFunction()" aria-label="Compose with function" ng-disabled="$root.readonlymode">Compose with </md-button>
-    <md-input-container flex>
+    <md-input-container  class="md-block" flex>
         <label>Comment</label>
 
         <input ng-model="function.docstring" type="text"  ng-readonly="$root.readonlymode">

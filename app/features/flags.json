@@ -1,0 +1,26 @@
+[
+    {
+        "key": "filetypeToggling",
+        "active": false,
+        "name": "Filetype toggling",
+        "description": "Allows user to choose between downloading CSV and RDF file (all supported serializations)"
+    },
+    {
+        "key": "spreadsheet",
+        "active": false,
+        "name": "Spreadsheet interface",
+        "description": "Allows to perform tabular transformations directly on the preview table"
+    },
+    {
+        "key": "input-formatter",
+        "active": false,
+        "name": "Advanced file upload",
+        "description": "Allows to upload shapefiles, excel files, various delimiter-separated files"
+    },
+    {
+        "key": "audit",
+        "active": false,
+        "name": "Data audit",
+        "description": "Feature to enable data audit (outliers, spelling check, schema)"
+    }
+]

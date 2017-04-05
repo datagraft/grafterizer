@@ -12,16 +12,20 @@ angular.module('grafterizerApp')
     templateUrl: 'views/pipelineFunctions/mapcFunction.html',
     restrict: 'E',
     link: function postLink(scope, element, attrs) {
+        scope.showArgs=[];
       if (!scope.function) {
         var keyfuncpair = new transformationDataModel.KeyFunctionPair(
           '', scope.$parent.transformation.findPrefixerOrCustomFunctionByName('string-literal'), []);
         scope.function = new transformationDataModel.MapcFunction([keyfuncpair], null);
         scope.function.docstring = null;
+          scope.showArgs.push(true);
       } else {
         for (var i = 0; i < scope.function.keyFunctionPairs.length; ++i) {
           var currFunc = scope.function.keyFunctionPairs[i].func;
           if (!currFunc.hasOwnProperty('name')) scope.function.keyFunctionPairs[i].func = scope.$parent.transformation.findPrefixerOrCustomFunctionByName(currFunc);
+              scope.showArgs.push(false);
         }
+           
       }
 
       if (!(scope.function instanceof transformationDataModel.MapcFunction)) {
@@ -41,6 +45,7 @@ angular.module('grafterizerApp')
         return new transformationDataModel.MapcFunction(scope.function.keyFunctionPairs, scope.function.docstring);
       };
 
+    
       scope.getCustomFunctionsAndPrefixers = function() {
 
         var customFunctionsAndPrefixers = [];
@@ -63,10 +68,14 @@ angular.module('grafterizerApp')
       };
 
       scope.addKeyFunctionPair = function() {
+             for (var i = 0; i < scope.function.keyFunctionPairs.length; ++i) {
+                 scope.showArgs[i]=false;
+             }
         var newKeyFunctionPair = new transformationDataModel.KeyFunctionPair('',{name:'string-literal',
                                                                                  group:'CONVERT_DATATYPE',
                                                                                  id:0},[]);
         this.function.keyFunctionPairs.push(newKeyFunctionPair);
+       scope.showArgs[scope.function.keyFunctionPairs.length-1]=true;
       };
       scope.removeKeyFunctionPair = function(kfPair) {
         scope.function.removeKeyFunctionPair(kfPair);

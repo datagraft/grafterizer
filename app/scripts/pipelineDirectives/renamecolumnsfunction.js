@@ -27,6 +27,13 @@ angular.module('grafterizerApp')
           };
         };
 
+          if (scope.function) {
+              if (scope.function.functionsToRenameWith[0]) 
+                  scope.renamecolumnsmode = 'function';
+              else
+                  scope.renamecolumnsmode = 'map';
+                  
+          }
         scope.$parent.generateCurrFunction = function() {
           var functArray = [];
           var newrenfunc;

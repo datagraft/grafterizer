@@ -32,7 +32,7 @@
     <h3>Parameters</h3>
     <md-button class="md-raised" ng-click="addKeyFunctionPair()" aria-label="Add mapping" ng-disabled="$root.readonlymode">Add mapping</md-button>
     <div layout="row" ng-repeat="keyFunctionPair in function.keyFunctionPairs">
-      <div layout="row" layout-align="start center">
+      <div layout="row" layout-align="start start">
         <md-button class="md-primary button-tight md-default-theme" ng-disabled="function.keyFunctionPairs.length === 1 || $root.readonlymode" ng-click="removeKeyFunctionPair(keyFunctionPair)" aria-label="Remove column mapping">
           <i class="fa fa-trash fa-lg"></i>
         </md-button>
@@ -47,16 +47,25 @@
           <oi-select oi-options="customFunction.name group by customFunction.group for customFunction in  getCustomFunctionsAndPrefixers() track by customFunction.id" title="customFunction.docstring" ng-model="keyFunctionPair.func" ng-disabled="$root.readonlymode"></oi-select>
         </div>
         <div layout="column" style="margin-left:20px">
-          <md-input-container ng-repeat="param in keyFunctionPair.getParams()">
+            <md-button ng-show="keyFunctionPair.getParams().length > 0"  style="margin-top:20px" aria-label="Arguments" ng-click="showArgs[$index] = !showArgs[$index]">
+            <span ng-hide="showArgs[$index]"> <i class="fa fa-angle-down"></i>
+                Arguments
+                </span>
+            <span ng-show="showArgs[$index]"> <i class="fa fa-angle-up"></i>
+                Arguments
+                </span>
+                </md-button>
+            <div ng-show="showArgs[$index]" layout="column">
+          <md-input-container  ng-repeat="param in keyFunctionPair.getParams()">
             <label>{{param}}</label>
             <input ng-model = "keyFunctionPair.funcParams[$index]">
           </md-input-container> 
-
+</div>
         </div>
       </div>
 
     </div>
-    <md-input-container flex>
+    <md-input-container class="md-block"  flex>
       <label>Comment</label>
 
       <input ng-model="function.docstring" type="text" ng-readonly="$root.readonlymode">

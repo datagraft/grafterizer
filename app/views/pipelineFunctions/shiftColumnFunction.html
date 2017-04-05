@@ -120,11 +120,11 @@
 
             <h3>Parameters</h3>
 
-    <md-input-container ng-show="colnames.length !== 0" lex>
+    <md-input-container class="md-block" ng-show="colnames.length !== 0" lex>
         <label>Column name</label>
              <oi-select flex class = "md-primary md-default-theme"  oi-options="column.value for column in colnames track by column.id" ng-model="function.colFrom" ng-disabled="$root.readonlymode"></oi-select>
     </md-input-container>
-    <md-input-container ng-show="colnames.length === 0" lex>
+    <md-input-container class="md-block" ng-show="colnames.length === 0" lex>
              <oi-select  flex class = "md-primary md-default-theme"  oi-options="column.value for column in []" ng-model="function.colFrom" oi-select-options="{newItem: true, newItemFn: 'addColumn($query)'}" ng-disabled="$root.readonlymode"></oi-select>
     </md-input-container>
 
@@ -142,7 +142,7 @@
     </md-input-container>
   
   </div>
-    <md-input-container flex>
+    <md-input-container  class="md-block" flex>
         <label>Comment</label>
 
         <input ng-model="function.docstring" type="text"  ng-readonly="$root.readonlymode">

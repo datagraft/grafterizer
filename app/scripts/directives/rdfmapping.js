@@ -89,7 +89,7 @@ angular.module('grafterizerApp')
 
           } else if (transformation.graphs.length > 0) {
 
-            var isEmpty = !_.detect(transformation.graphs, function(graph) {
+            var isEmpty = !_.find(transformation.graphs, function(graph) {
               return graph.graphRoots && graph.graphRoots.length > 0;
             });
 

@@ -201,7 +201,16 @@ angular.module('grafterizerApp')
         for (i = 0; i < rows.length; ++i) {
           var tuple = {};
           for (key in rows[i]) {
-            tuple[window.btoa(key)] = rows[i][key];
+            // load only first 500 char for each cell
+             var data = rows[i][key];
+              // When uploading from the Excel file, empty cells are null
+             if (!data) data = "";
+            var lengthOfDataInACell = data.length;
+            if(lengthOfDataInACell>500)
+            {
+              data = data.substring(0, 500);
+            }
+            tuple[window.btoa(key)] = data;
           }
           btoaData.push(tuple);
         }

@@ -469,9 +469,22 @@ module.exports = function (grunt) {
         configFile: 'test/karma.conf.js',
         singleRun: true
       }
-    }
-  });
+    },
 
+     // Configure a mochaTest task
+     mochaTest: {
+       integration: {
+         options: {
+           reporter: 'spec',
+           quiet: false, // Optionally suppress output to standard out (defaults to false)
+           clearRequireCache: true, // Optionally clear the require cache before running tests (defaults to false)
+           timeout: 60*1000 // Test execution timeout in ms
+         },
+         src: ['test/integration/*.js']
+       }
+     }
+ 
+  });
 
   grunt.registerTask('serve', 'Compile then start a connect web server', function (target) {
     if (target === 'dist') {
@@ -503,13 +516,7 @@ module.exports = function (grunt) {
     'karma'
   ]);
 
-  grunt.registerTask('check', [
-    'jscs',
-    'jshint:all'
-  ]);
-
   grunt.registerTask('build', [
-    'check', // remove this if you are lazy
     'clean:dist',
     'wiredep:app',
     'useminPrepare',
@@ -526,8 +533,16 @@ module.exports = function (grunt) {
   ]);
 
   grunt.registerTask('default', [
-    'newer:jshint',
     'test',
     'build'
+  ]);
+
+   grunt.registerTask('selenium', [
+      'mochaTest:integration'
+  ]);
+
+  grunt.registerTask('check', [
+    'jscs',
+    'jshint:all'
   ]);
 };
