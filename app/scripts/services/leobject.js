@@ -14,7 +14,7 @@ angular.module('grafterizerApp')
       'https://grafterizer.datagraft.net/vocabularies/api/vocabulary/'
       : '/vocabularies/api/vocabulary/';
 
-    //this.serveraddress = 'http://localhost:8080/VocabBackend/api/vocabulary/';
+//    this.serveraddress = 'http://localhost:8088/ManageVocabulary/api/vocabulary/';
     this.validationOn = false;
 
   });
