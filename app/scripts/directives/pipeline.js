@@ -24,7 +24,9 @@ angular.module('grafterizerApp')
       {
         return funct.name =="upload-dataset" ? true : false;
       }
-
+      scope.onFunctionHover = function (funct) {
+          funct.fabIsOpen=true;
+      }
       scope.clickAddAfter = function(funct) {
         var newScope = scope.$new(false, scope);
         newScope.transformation = scope.transformation;
@@ -39,8 +41,9 @@ angular.module('grafterizerApp')
               f.fabIsOpen = false;
               f.leaveFabOpen = false;
             });
-            pipeFunct.fabIsOpen = true;
-            pipeFunct.leaveFabOpen = true;
+         
+            
+              
             if (!$rootScope.previewmode) {
               return;
             }
@@ -52,8 +55,11 @@ angular.module('grafterizerApp')
             $rootScope.currentlyPreviewedFunction.isPreviewed = false;
             $rootScope.currentlyPreviewedFunction = pipeFunct;
             pipeFunct.isPreviewed = true;
-
+            pipeFunct.fabIsOpen = false;
+            pipeFunct.leaveFabOpen = false;
+            
             $rootScope.previewedClojure = generateClojure.fromTransformation(scope.transformation.getPartialTransformation(pipeFunct));
+                
           }
         });
       };
@@ -115,7 +121,7 @@ angular.module('grafterizerApp')
         if (scope.previousFunct) {
           scope.previousFunct.fabIsOpen = false;
         }
-
+    
         scope.previousFunct = funct;
 
         window.setTimeout(function() {

@@ -106,9 +106,9 @@ angular.module('grafterizerApp')
       }
    
   }
-      if ($scope.nodeCurrentState.__type === 'ConstantURI') 
-          $scope.nodeCurrentState.prefix = ($scope.nodeCurrentState.prefix.hasOwnProperty('id') ? $scope.nodeCurrentState.prefix : {id:0, value: $scope.nodeCurrentState.prefix});
-
+      if ($scope.nodeCurrentState.__type === 'ConstantURI') {
+          $scope.nodeCurrentState.prefix = ($scope.nodeCurrentState.prefix.hasOwnProperty('id') ? $scope.nodeCurrentState.prefix : {id:0, value: $scope.nodeCurrentState.prefix}); 
+      }
     if ($scope.nodeCurrentState.__type === 'ColumnLiteral') $scope.columnLiteralHasDatatype = ($scope.nodeCurrentState.datatype.name === 'unspecified' || $scope.nodeCurrentState.datatype.name === undefined) ? false : true;
     // serialise the node state object to the proper RDF element type
     $scope.nodeCurrentState = transformationDataModel.getGraphElement($scope.nodeCurrentState);
@@ -393,6 +393,7 @@ $scope.addPref = function(query) {
             $scope.nodeCurrentState = new transformationDataModel.ColumnURI(
               $scope.nodeCurrentState.prefix ? $scope.nodeCurrentState.prefix : {id:0,value:''},
               $scope.nodeCurrentState.column ? $scope.nodeCurrentState.column : '',
+              $scope.nodeCurrentState.rdfType,
               [],
               $scope.nodeCurrentStateSubElements ? $scope.nodeCurrentStateSubElements : []
             );
@@ -403,6 +404,7 @@ $scope.addPref = function(query) {
             $scope.nodeCurrentState = new transformationDataModel.ConstantURI(
               $scope.nodeCurrentState.prefix ? $scope.nodeCurrentState.prefix : '',
               $scope.nodeCurrentState.constant ? $scope.nodeCurrentState.constant : '',
+                $scope.nodeCurrentState.rdfType,
               [],
               $scope.nodeCurrentStateSubElements ? $scope.nodeCurrentStateSubElements : []
             );

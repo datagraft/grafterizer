@@ -4,9 +4,14 @@
         Add a root node to the graph
       </md-tooltip>
 </md-button>
-<div layout="column" ng-model="graph" ng-repeat="node in graph.graphRoots">
+
+ <div  class="md-block"  ng-model="graph">
+<div layout="column"  layout-align="start start" class="md-block"  ng-repeat="node in graph.graphRoots">
+     <div  layout="row" layout-align="center">
     <constant-uri-node ng-if="node.__type=='ConstantURI'" node="node" parent="graph"></constant-uri-node>
     <column-uri-node ng-if="node.__type=='ColumnURI'" node="node" parent="graph"></column-uri-node>
     <constant-literal-node ng-if="node.__type=='ConstantLiteral'" node="node" parent="graph"></constant-literal-node>
-    <column-literal-node ng-if="node.__type=='ColumnLiteral'" node="node" parent="graph"></column-literal-node>
+    <column-literal-node   ng-if="node.__type=='ColumnLiteral'" node="node" parent="graph"></column-literal-node>
+</div>         
+</div>
 </div>

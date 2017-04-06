@@ -121,7 +121,7 @@ $scope.addColumn = function(query) {
     return false;
   };
   if (!$scope.property) {
-    $scope.property = new transformationDataModel.Property('', '', [ new transformationDataModel.Condition(null,null,null,null)], []);
+    $scope.property = new transformationDataModel.Property('', '', [ new transformationDataModel.Condition(null,null,null,null)], [], false);
   } else {
     if ($scope.property.prefix) {
       // we have a prefix - display prefix:property-name

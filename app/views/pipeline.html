@@ -9,12 +9,12 @@
     <div ng-repeat="funct in pipeline.functions" ng-if="$index > 0"   as-sortable-item flex>
       <div as-sortable-item-handle layout="row" layout-align="center">
         <md-fab-speed-dial md-direction="right" class="md-scale" md-open="funct.fabIsOpen"
-                           ng-mouseenter="funct.fabIsOpen=true" ng-mouseleave="funct.fabIsOpen=funct.isPreviewed||funct.leaveFabOpen" ng-click="toggleFabStates(funct)">
+                           ng-mouseenter="onFunctionHover(funct)" ng-mouseleave="funct.fabIsOpen=funct.leaveFabOpen" ng-click="toggleFabStates(funct)">
           <md-fab-trigger>
             <pipeline-function  transformation="$parent.transformation" function="funct"></pipeline-function>
           </md-fab-trigger>
           <md-fab-actions class="layout-row" ng-if="!$root.readonlymode">
-            <md-button  class="md-primary button-tight pipeline-action-icon" aria-label="Preview until this step" ng-click="previewUntilStep(funct)" ng-hide="funct.isPreviewed || !$root.previewmode"> <i class="fa fa-large fa-eye"></i>
+            <md-button  class="md-primary button-tight pipeline-action-icon" aria-label="Preview until this step" ng-click="previewUntilStep(funct)" ng-hide="funct.isPreviewed ||!$root.previewmode"> <i class="fa fa-large fa-eye"></i>
               <md-tooltip>Preview until this step</md-tooltip>
             </md-button>
             <md-button class="md-primary button-tight pipeline-action-icon" aria-label="Reset preview" ng-click="closePreviewOfFunction(funct)" ng-show="funct.isPreviewed"> <i class="fa fa-large fa-eye-slash"></i>

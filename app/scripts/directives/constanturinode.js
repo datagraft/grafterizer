@@ -71,7 +71,11 @@ angular.module('grafterizerApp')
             clickOutsideToClose: true
           }).then(function(graphNode) {
             if (graphNode) {
+                
+                
               scope.parent.addNodeAfter(scope.node, graphNode);
+                
+                
             }
           }, function() {
 
@@ -92,7 +96,14 @@ angular.module('grafterizerApp')
           }).then(
             function(propertyNode) {
               if (propertyNode) {
+                  console.log(scope.node);
+                  console.log(scope.parent);
+                if (scope.parent.__type=== 'Graph') {
                 scope.node.addNodeAfter(null, propertyNode);
+              }
+                  else 
+                 scope.node.addNodeAfter(null, propertyNode,true);
+            
               }
             },
 

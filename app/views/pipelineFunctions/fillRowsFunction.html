@@ -1,0 +1,148 @@
+<div layout="column">
+    <div>
+        <show-hide-documentation show-usage="showUsage"></show-hide-documentation>
+        <div class="api-doc-docstring" ng-show = "showUsage" layout="column">
+            
+            <p> Fills empty cells in a row(rows). The cell values will be copied through the row over blank cells until the next non-blank cell </p> 
+                <p> Example: 
+                 Given original dataset: </p>
+                <table>
+                    <tr>
+                        <td> a </td>
+                        <td> b </td>
+                        <td> c </td>
+                        <td> d </td>
+                        <td> e </td>
+                        <td> f </td>
+                        <td> g </td>
+                        <td> h </td>
+                        <td> i </td>
+                        <td> j </td>
+                    </tr>
+                    <tr>
+                        <td> Industry </td>
+                        <td> Under 20 </td>
+                        <td>  </td>
+                        <td> 20-35 </td>
+                        <td>  </td>
+                        <td> 35-50 </td>
+                        <td>  </td>
+                        <td> Over 50 </td>
+                        <td>  </td>
+                        <td>  Total </td>
+                        
+                    </tr>
+                    <tr>
+                        <td>  </td>
+                        <td> Men </td>
+                        <td> Woman </td>
+                        <td> Men </td>
+                        <td> Woman </td>
+                        <td> Men </td>
+                        <td> Woman </td>
+                        <td> Men </td>
+                        <td> Women </td>
+                        <td>  </td>
+                    </tr>
+
+                    <tr>
+                        <td> Agriculture </td>
+                        <td> 50 </td>
+                        <td> 12 </td>
+                        <td> 132 </td>
+                        <td> 100 </td>
+                        <td> 115 </td>
+                        <td> 96 </td>
+                         <td> 106 </td>
+                        <td> 80 </td>
+                        <td> 691 </td>
+                        
+                    </tr>
+                    
+                </table>
+                <p> It is possible to fill in missing values in row 0 : </p>
+            <p><img src="/images/fillrows.png"></p>
+                <table>
+                    <tr>
+                        <td> a </td>
+                        <td> b </td>
+                        <td> c </td>
+                        <td> d </td>
+                        <td> e </td>
+                        <td> f </td>
+                        <td> g </td>
+                        <td> h </td>
+                        <td> i </td>
+                        <td> j </td>
+                    </tr>
+                    <tr>
+                        <td> Industry </td>
+                        <td> Under 20 </td>
+                        <td> Under 20 </td>
+                        <td> 20-35 </td>
+                        <td> 20-35 </td>
+                        <td> 35-50 </td>
+                        <td> 35-50 </td>
+                        <td> Over 50 </td>
+                        <td> Over 50 </td>
+                        <td>  Total </td>
+                        
+                    </tr>
+                    <tr>
+                        <td> Industry </td>
+                        <td> Men </td>
+                        <td> Women </td>
+                        <td> Men </td>
+                        <td> Women </td>
+                        <td> Men </td>
+                        <td> Women </td>
+                        <td> Men </td>
+                        <td> Women </td>
+                        <td> Total </td>
+                    </tr>
+
+                    <tr>
+                        <td> Agriculture </td>
+                        <td> 50 </td>
+                        <td> 12 </td>
+                        <td> 132 </td>
+                        <td> 100 </td>
+                        <td> 115 </td>
+                        <td> 96 </td>
+                        <td> 106 </td>
+                        <td> 80 </td>
+                        <td> 691 </td>
+                        
+                    </tr>
+                    
+                </table>
+        <show-hide-documentation show-usage="showUsage"></show-hide-documentation>
+    </div>
+    </div>
+<div>
+
+            <h3>Parameters</h3>
+
+    <div layout = "row">
+    <md-input-container flex>
+        <label>Index from</label>
+            <input ng-model="function.indexFrom" type="number" class="numberinput"  min="0" >
+    </md-input-container>
+    <md-input-container flex>
+        <label>Index to</label>
+            <input ng-model="function.indexTo" class="numberinput" type="number" min="0" >
+    </md-input-container>
+        </div>
+    
+  </div>
+    <md-input-container class="md-block" flex>
+        <label>Comment</label>
+
+        <input ng-model="function.docstring" type="text"  ng-readonly="$root.readonlymode">
+    </md-input-container>
+</div>
+
+</div>
+<!--
+ng-hide="transformation.customFunctionDeclarations"
+-->

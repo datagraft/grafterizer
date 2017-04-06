@@ -111,6 +111,18 @@ angular.module('grafterizerApp')
             selected: false,
             type: 'rows'
           },
+            {
+            displayName: 'Fill Rows',
+            name: 'fill-rows',
+            selected: false,
+            type: 'rows'
+          },
+             {
+            displayName: 'Merge Rows',
+            name: 'merge-rows',
+            selected: false,
+            type: 'rows'
+          },
           {
             displayName: 'Shift Row',
             name: 'shift-row',
@@ -129,6 +141,7 @@ angular.module('grafterizerApp')
             selected: false,
             type: 'rows'
           },
+             
           {
             displayName: 'Reads the input data for the data transformation. \n Cannot be moved or removed',
             name: 'upload-dataset',

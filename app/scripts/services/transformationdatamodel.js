@@ -116,13 +116,17 @@ angular.module('grafterizerApp')
 
   var UtilityFunction = function(functionName, docstring) {
     GenericFunction.call(this);
-    if (functionName)
-      if (!(functionName instanceof CustomFunctionDeclaration) && functionName.__type ===
-          'CustomFunctionDeclaration') {
-        functionName = CustomFunctionDeclaration.revive(functionName);
+      if (functionName !== null) {
+      
+        
+          if (!functionName instanceof FunctionWithArgs) {
+            functionName = new FunctionWithArgs(functionName);
+          
+    }
+      
       }
-
     this.functionName = functionName;
+    this.params = params;
     if ((!docstring) && functionName) this.docstring = 'Apply ' + functionName.name + ' to dataset';
     else this.docstring = docstring;
     this.name = 'utility';
@@ -130,11 +134,17 @@ angular.module('grafterizerApp')
     this.__type = 'UtilityFunction';
   };
   UtilityFunction.revive = function(data) {
-    return new UtilityFunction(data.functionName, data.docstring);
+    return new UtilityFunction(data.functionName, data.params, data.docstring);
   };
   UtilityFunction.prototype = Object.create(GenericFunction.prototype);
   UtilityFunction.prototype.generateClojure = function() {
-    return new jsedn.List([jsedn.sym(this.functionName.name)]);
+      var elems = [jsedn.sym(this.functionName.name)];
+      for (var i = 0; i< this.params.length; ++i) 
+          {
+              elems.push(jsedn.sym.params);
+          }
+          
+    return new jsedn.List(elems);
   };
   this.UtilityFunction = UtilityFunction;
 
@@ -1328,6 +1338,79 @@ angular.module('grafterizerApp')
 
   };
   this.ColumnsFunction = ColumnsFunction;
+    
+    
+    var FillRowsFunction = function(indexFrom, indexTo, docstring) {
+    // array of column names
+    this.name = 'fill-rows';
+    this.displayName = 'fill-rows';
+    GenericFunction.call(this);
+    this.indexFrom = indexFrom;
+    this.indexTo = indexTo;
+    this.__type = 'FillRowsFunction';
+
+    if (!docstring) {
+
+      this.docstring = 'Fill rows ' + indexFrom + ' - ' + indexTo;
+       
+
+    } else this.docstring = docstring;
+  };
+
+FillRowsFunction.revive = function(data) {
+    
+    return new FillRowsFunction(data.indexFrom, data. indexTo, data.docstring);
+  
+};
+
+  FillRowsFunction.prototype = Object.create(GenericFunction.prototype);
+  FillRowsFunction.prototype.generateClojure = function() {
+
+    var fillRowsEdn = new jsedn.List([jsedn.sym('new-tabular/fill-row-when'), this.indexFrom]);
+      
+      if (this.indexFrom !== this.indexTo) 
+          fillRowsEdn.val.push(this.indexTo);
+      return fillRowsEdn;
+
+  };
+  this.FillRowsFunction = FillRowsFunction;
+
+      var MergeRowsFunction = function(indexFrom, indexTo, separator, docstring) {
+    // array of column names
+    this.name = 'merge-rows';
+    this.displayName = 'merge-rows';
+    GenericFunction.call(this);
+    this.indexFrom = indexFrom;
+    this.indexTo = indexTo;
+    this.separator = separator;
+    this.__type = 'MergeRowsFunction';
+
+    if (!docstring) {
+
+      this.docstring = 'Merge rows ' + indexFrom + ' - ' + indexTo;
+       
+
+    } else this.docstring = docstring;
+  };
+
+MergeRowsFunction.revive = function(data) {
+    
+    return new MergeRowsFunction(data.indexFrom, data. indexTo, data.separator, data.docstring);
+  
+};
+
+  MergeRowsFunction.prototype = Object.create(GenericFunction.prototype);
+  MergeRowsFunction.prototype.generateClojure = function() {
+
+    
+      
+    
+      return new jsedn.List([jsedn.sym('new-tabular/merge-rows'), this.indexFrom, this.indexTo , this.separator]);
+
+  };
+  this.MergeRowsFunction = MergeRowsFunction;
+
+    
 
   var ChangeColtype = function(columnName, datatype) {
     this.name = 'changeColtype';
@@ -1382,7 +1465,9 @@ angular.module('grafterizerApp')
       for (i = 0; i < this.columnsArray.length; ++i) {
         colNamesClj.val.push(new jsedn.kw(':' + this.columnsArray[i].value));
       }
-      returnValue = new jsedn.List([jsedn.sym('melt'), colNamesClj]);
+     // returnValue = new jsedn.List([jsedn.sym('melt'), colNamesClj]);
+          returnValue = new jsedn.List([jsedn.sym('->'),new jsedn.List([jsedn.sym('melt'), colNamesClj])
+                                    ,new jsedn.List([jsedn.sym('mapc'), new jsedn.Map([jsedn.kw(':variable'), jsedn.sym('name')])])]);
     }
     else {
 
@@ -1468,6 +1553,13 @@ angular.module('grafterizerApp')
         if (funct.__type === 'MeltFunction') {
           functions[i] = MeltFunction.revive(funct);
         }
+ if (funct.__type === 'FillRowsFunction') {
+          functions[i] = FillRowsFunction.revive(funct);
+        }
+
+           if (funct.__type === 'MergeRowsFunction') {
+          functions[i] = MergeRowsFunction.revive(funct);
+        }
 
         if (funct.__type === 'GrepFunction') {
           functions[i] = GrepFunction.revive(funct);
@@ -1548,7 +1640,10 @@ angular.module('grafterizerApp')
   URINode.prototype.addChild = function(child) {
     this.subElements.push(child);
   };
-  URINode.prototype.addNodeAfter = function(property, propertyToAdd) {
+  URINode.prototype.addNodeAfter = function(property, propertyToAdd, isNested) {
+      if (isNested === true)
+          {propertyToAdd.isNested = true;}
+      
     var index = this.subElements.indexOf(property);
     if (!property || index === -1) {
       this.subElements.push(propertyToAdd);
@@ -1564,6 +1659,9 @@ angular.module('grafterizerApp')
 
     return false;
   };
+    
+
+    
   URINode.prototype.removeChild = function(child) {
     var childIndex = this.subElements.indexOf(child);
     if (childIndex !== -1) {
@@ -1580,9 +1678,10 @@ angular.module('grafterizerApp')
   };
   this.URINode = URINode;
 
-  var ConstantURI = function(prefix, constantURIText, nodeCondition, subElements) {
+  var ConstantURI = function(prefix, constantURIText, rdfType, nodeCondition, subElements) {
     URINode.call(this, prefix, subElements);
     this.constant = constantURIText;
+       this.rdfType = rdfType;
     this.nodeCondition = nodeCondition;
     this.__type = 'ConstantURI';
   };
@@ -1596,13 +1695,14 @@ angular.module('grafterizerApp')
         }
       }
     }
-    return new ConstantURI(data.prefix, data.constant, conditions, data.subElements);
+    return new ConstantURI(data.prefix, data.constant, data.rdfType, conditions, data.subElements);
   };
   this.ConstantURI = ConstantURI;
 
-  var ColumnURI = function(prefix, columnName, nodeCondition, subElements) {
+  var ColumnURI = function(prefix, columnName, rdfType, nodeCondition, subElements) {
     URINode.call(this, prefix.value, subElements);
     this.column = columnName;
+      this.rdfType = rdfType;
     this.nodeCondition = nodeCondition;
     this.__type = 'ColumnURI';
   };
@@ -1628,7 +1728,7 @@ angular.module('grafterizerApp')
         }
       }
     }
-    return new ColumnURI(prefix, colname, conditions, data.subElements);
+    return new ColumnURI(prefix, colname, data.rdfType, conditions, data.subElements);
   };
   this.ColumnURI = ColumnURI;
 
@@ -1644,11 +1744,12 @@ angular.module('grafterizerApp')
   };
   this.Condition = Condition;
 
-  var Property = function(prefix, propertyName, propertyCondition, subElements) {
+  var Property = function(prefix, propertyName, propertyCondition, subElements, isNested) {
     RDFElement.call(this, subElements);
     this.prefix = prefix;
     this.propertyName = propertyName;
     this.propertyCondition = propertyCondition;
+    this.isNested = isNested;
     this.__type = 'Property';
   };
   Property.prototype = Object.create(RDFElement.prototype);
@@ -1702,7 +1803,7 @@ angular.module('grafterizerApp')
     }
     //else console.log("No prop condition");
 
-    return new Property(data.prefix, data.propertyName, conditions ,data.subElements);
+    return new Property(data.prefix, data.propertyName, conditions ,data.subElements, data.isNested);
   };
   this.Property = Property;
 
@@ -1972,6 +2073,7 @@ angular.module('grafterizerApp')
     }
   };
   Transformation.prototype.addPrefixer = function(name, uri, parentPrefix) {
+ 
     for (var i = 0; i < this.prefixers.length; ++i) {
       if (this.prefixers[i].name === name.trim()) {
         return false;

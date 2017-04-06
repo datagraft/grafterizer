@@ -17,6 +17,7 @@ angular.module('grafterizerApp')
       },
       link: function postLink(scope, element, attrs) {
         scope.addNodeAfter = function() {
+   
           var newScope = scope.$new(false, scope);
           newScope.isCreate = true;
           newScope.parentNode = scope.parent;

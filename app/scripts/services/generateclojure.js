@@ -8,828 +8,914 @@
  * Service in the grafterizerApp.
  */
 angular.module('grafterizerApp')
-  .service('generateClojure', function (transformationDataModel, $rootScope) {
-  /***************************************************************************
-     * Main Grafter/Clojure generation variables and functions.
-     ****************************************************************************/
+    .service('generateClojure', function (transformationDataModel, $rootScope) {
+        /***************************************************************************
+         * Main Grafter/Clojure generation variables and functions.
+         ****************************************************************************/
 
-  var grafterSupportedRDFPrefixes = [
-    {
-      name: 'dcat',
-      text: ''
+        var grafterSupportedRDFPrefixes = [
+            {
+                name: 'dcat',
+                text: ''
     },
-    {
-      name: 'dcterms',
-      text: ''
+            {
+                name: 'dcterms',
+                text: ''
     },
-    {
-      name: 'foaf',
-      text: ''
+            {
+                name: 'foaf',
+                text: ''
     },
-    {
-      name: 'org',
-      text: ''
+            {
+                name: 'org',
+                text: ''
     },
-    {
-      name: 'os',
-      text: ''
+            {
+                name: 'os',
+                text: ''
     },
-    {
-      name: 'ps',
-      text: ''
+            {
+                name: 'ps',
+                text: ''
     },
-    {
-      name: 'owl',
-      text: ''
+            {
+                name: 'owl',
+                text: ''
     },
-    {
-      name: 'pmd',
-      text: ''
+            {
+                name: 'pmd',
+                text: ''
     },
-    {
-      name: 'qb',
-      text: ''
+            {
+                name: 'qb',
+                text: ''
     },
-    {
-      name: 'rdf',
-      text: ''
+            {
+                name: 'rdf',
+                text: ''
     },
-    {
-      name: 'sdmx-attribute',
-      text: ''
+            {
+                name: 'sdmx-attribute',
+                text: ''
     },
-    {
-      name: 'sdmx-measure',
-      text: ''
+            {
+                name: 'sdmx-measure',
+                text: ''
     },
-    {
-      name: 'sdmx-concept',
-      text: ''
+            {
+                name: 'sdmx-concept',
+                text: ''
     },
-    {
-      name: 'skos',
-      text: ''
+            {
+                name: 'skos',
+                text: ''
     },
-    {
-      name: 'vcard',
-      text: ''
+            {
+                name: 'vcard',
+                text: ''
     },
-    {
-      name: 'void',
-      text: ''
+            {
+                name: 'void',
+                text: ''
     },
-    {
-      name: 'xsd',
-      text: ''
+            {
+                name: 'xsd',
+                text: ''
     }
   ];
+    var typePrefixes = [];
 
-  function isSupportedPrefix(prefixName) {
-    var i;
-    for (i = 0; i < grafterSupportedRDFPrefixes.length; ++i) {
-      if (grafterSupportedRDFPrefixes[i].name === prefixName)
-        return true;
-    }
+        function isSupportedPrefix(prefixName) {
+            var i;
+            for (i = 0; i < grafterSupportedRDFPrefixes.length; ++i) {
+                if (grafterSupportedRDFPrefixes[i].name === prefixName)
+                    return true;
+            }
 
-    return false;
-  }
+            return false;
+        }
 
-  var pipelineFunctions = new jsedn.List([]);
+        var pipelineFunctions = new jsedn.List([]);
 
-  var pipeline = new jsedn.List([ // i don't see why this variable has been initialized with these values, then set to null and reassigned with new values????
+        var pipeline = new jsedn.List([ // i don't see why this variable has been initialized with these values, then set to null and reassigned with new values????
     jsedn.sym('defn'),
     jsedn.sym('pipeline'),
     new jsedn.Vector([new jsedn.sym('dataset')]),
     new jsedn.List([jsedn.sym('->'), jsedn.sym('dataset')])]);
 
-  /* Holds the individual declarations. Used to form the declarations object that can then be rendered in Clojure. */
-  var prefixers = [];
+        /* Holds the individual declarations. Used to form the declarations object that can then be rendered in Clojure. */
+        var prefixers = [];
 
-  /* Holds the jsedn list of user functions. Used to render them in Clojure code. */
-  var userFunctions = [];
+        /* Holds the jsedn list of user functions. Used to render them in Clojure code. */
+        var userFunctions = [];
 
-  /* Interface for alerts about errors. To be used to connect to other interface components when we integrate the GUI. */
-  function alertInterface(error, errorString) {
-    /*
-       * TODO re-define me when integrating with the rest of the UI
-       */
-    var message = errorString;
-    if (!message && error && error.message) {
-      message = message;
-    } else {
-      message = error;
-    }
+        /* Interface for alerts about errors. To be used to connect to other interface components when we integrate the GUI. */
+        function alertInterface(error, errorString) {
+            /*
+             * TODO re-define me when integrating with the rest of the UI
+             */
+            var message = errorString;
+            if (!message && error && error.message) {
+                message = message;
+            } else {
+                message = error;
+            }
 
-    Raven.captureMessage(message, {
-      tags: {
-        file: 'generateclojure',
-        method: 'alertInterface'
-      }
-    });
-    console.log(error, errorString);
-  }
+            Raven.captureMessage(message, {
+                tags: {
+                    file: 'generateclojure',
+                    method: 'alertInterface'
+                }
+            });
+            console.log(error, errorString);
+        }
 
-  /* Adds a prefixer to the list of pre-defined prefixers */
-  function addGrafterPrefixer(name, prefixString, parentPrefix) {
-    var prefixer;
+        /* Adds a prefixer to the list of pre-defined prefixers */
+        function addGrafterPrefixer(name, prefixString, parentPrefix) {
+         
+            var prefixer;
 
-    if (parentPrefix.toString().trim() === '') {
-      prefixer = new jsedn.List([
+            if (parentPrefix.toString().trim() === '') {
+                prefixer = new jsedn.List([
         jsedn.sym('def'),
         jsedn.sym(name),
         new jsedn.List([jsedn.sym('prefixer'), prefixString])
       ]);
 
-    } else {
+            } else {
 
-      prefixer = new jsedn.List([
+                prefixer = new jsedn.List([
         jsedn.sym('def'),
         jsedn.sym(name),
         new jsedn.List(
           [jsedn.sym('prefixer'), new jsedn.List([jsedn.sym(parentPrefix), prefixString])
           ])
       ]);
-    }
+            }
 
-    prefixers.push(prefixer);
-  }
+            prefixers.push(prefixer);
+        }
 
-  /* Constructs the collection of defined prefixers for RDF-isation */
-  function constructGrafterPrefixersArray() {
-    // we make a copy of the prefixers array that we eventually return
-    var result = prefixers.slice();
+        /* Constructs the collection of defined prefixers for RDF-isation */
+        function constructGrafterPrefixersArray() {
+            // we make a copy of the prefixers array that we eventually return
+            var result = prefixers.slice();
 
-    /* the prefixers array needs to be re-initialized so that we don't append new values to it when generating the Grafter code */
-    prefixers = [];
-    return result;
-  }
+            /* the prefixers array needs to be re-initialized so that we don't append new values to it when generating the Grafter code */
+            prefixers = [];
+            return result;
+        }
 
-  /* Adds a user function rendered as a jsedn object to the collection of user functions */
-  function addUserFunction(userFunctionEdn) {
-    userFunctions.push(userFunctionEdn);
-  }
+        /* Adds a user function rendered as a jsedn object to the collection of user functions */
+        function addUserFunction(userFunctionEdn) {
+            userFunctions.push(userFunctionEdn);
+        }
 
-  /* Calls the jsedn parser and returns the parsed user function */
-  function parseAndAddUserFunction(userFunctionString) {
-    var result = parseEdnFromString(userFunctionString, 'Error parsing user function!');
+        /* Calls the jsedn parser and returns the parsed user function */
+        function parseAndAddUserFunction(userFunctionString) {
+            var result = parseEdnFromString(userFunctionString, 'Error parsing user function!');
 
-    if (!result) return false;
+            if (!result) return false;
 
-    addUserFunction(result);
-    return true;
-  }
+            addUserFunction(result);
+            return true;
+        }
 
-  function constructUserFunctions() {
-    // we make a copy of the user functions array that we eventually return
-    var result;
+        function constructUserFunctions() {
+            // we make a copy of the user functions array that we eventually return
+            var result;
 
-    userFunctions = userFunctions.filter(function(elem) {
-      return elem !== undefined;
-    });
+            userFunctions = userFunctions.filter(function (elem) {
+                return elem !== undefined;
+            });
 
-    if (userFunctions)
-      result = userFunctions.slice();
+            if (userFunctions)
+                result = userFunctions.slice();
 
-    /* the user functions array needs to be re-initialized so that we don't append new values
-       * to it when generating the Grafter code */
-    userFunctions = [];
+            /* the user functions array needs to be re-initialized so that we don't append new values
+             * to it when generating the Grafter code */
+            userFunctions = [];
 
-    return result;
-  }
+            return result;
+        }
 
-  /* Generic clojure code parser. Outputs a message to the alertInterface function
-     * in case an error occurs during parsing.
-     */
-  function parseEdnFromString(toParse, messageOnError) {
-    try {
-      var ednObject = jsedn.parse(toParse);
-      return ednObject;
-    } catch (e) {
-      alertInterface(e, messageOnError);
-      return null;
-    }
-  }
+        /* Generic clojure code parser. Outputs a message to the alertInterface function
+         * in case an error occurs during parsing.
+         */
+        function parseEdnFromString(toParse, messageOnError) {
+            try {
+                var ednObject = jsedn.parse(toParse);
+                return ednObject;
+            } catch (e) {
+                alertInterface(e, messageOnError);
+                return null;
+            }
+        }
 
-  /* Add a pipeline function (either user-defined or provided by Grafter) to an array
-     * which is used to construct the data transformation pipeline. */
-  function addPipelineFunction(jsednFunction) {
-    if (angular.isFunction(jsednFunction.generateClojure)) {
-      pipelineFunctions.val.push(jsednFunction.generateClojure());
-    }
-  }
+        /* Add a pipeline function (either user-defined or provided by Grafter) to an array
+         * which is used to construct the data transformation pipeline. */
+        function addPipelineFunction(jsednFunction) {
+            if (angular.isFunction(jsednFunction.generateClojure)) {
+                pipelineFunctions.val.push(jsednFunction.generateClojure());
+            }
+        }
 
-  /* Constructs and returns the data transformation pipeline. */
-  function constructPipeline() {
-    // this is the default dataset reader function, supports csv as default
-    var readDatasetFunct = new jsedn.List([
+        /* Constructs and returns the data transformation pipeline. */
+        function constructPipeline() {
+            // this is the default dataset reader function, supports csv as default
+            var readDatasetFunct = new jsedn.List([
       new jsedn.sym('read-dataset'),
       new jsedn.sym('data-file'),
       new jsedn.sym(':format'),
       new jsedn.sym(':csv')
     ]);
 
-    pipeline = null;
-    // creates the boiler pallet for pipeline (there should be at least one function after (->)
-    pipeline = new jsedn.List([
+            pipeline = null;
+            // creates the boiler pallet for pipeline (there should be at least one function after (->)
+            pipeline = new jsedn.List([
       jsedn.sym('defpipe'),
       jsedn.sym('my-pipe'),
       'Grafter pipeline for data clean-up and preparation.',
       new jsedn.Vector([new jsedn.sym('data-file')]),
       new jsedn.List([jsedn.sym('->')])]);
 
-    // if the pipeline is empty then add the default(dummy) reader
-    if(pipelineFunctions.val.length ==0)
-    {
-      pipelineFunctions.val[0] = readDatasetFunct;
-    }
-    // otherwise process what user has added to the pipeline
-    pipelineFunctions.map(function(arg) {
-    pipeline.val[4].val.push(arg);
-    });
+            // if the pipeline is empty then add the default(dummy) reader
+            if (pipelineFunctions.val.length == 0) {
+                pipelineFunctions.val[0] = readDatasetFunct;
+            }
+            // otherwise process what user has added to the pipeline
+            pipelineFunctions.map(function (arg) {
+                pipeline.val[4].val.push(arg);
+            });
 
-    pipelineFunctions = new jsedn.List([]);
-    return pipeline;
-  }
+            pipelineFunctions = new jsedn.List([]);
+            return pipeline;
+        }
 
-    function parseConditions(condArray) {
-        var parsedConditions = [];
-             var regexParsed;
-             for (var a = 0; a < condArray.length; ++a)
-                  {
+        function parseConditions(condArray) {
+            var parsedConditions = [];
+            var regexParsed;
+            for (var a = 0; a < condArray.length; ++a) {
 
-                      var cond = condArray[a];
-                      var operator,parsedCond;
+                var cond = condArray[a];
+                var operator, parsedCond;
 
-                      switch (cond.operator.id)
-                          {
-                              case 0:
+                switch (cond.operator.id) {
+                    case 0:
 
-                                  parsedCond = new jsedn.List([jsedn.sym('not-empty?'), jsedn.sym(cond.column.value)]);
+                        parsedCond = new jsedn.List([jsedn.sym('not-empty?'), jsedn.sym(cond.column.value)]);
 
-                                  break;
-                              case 1:
-                                  operator = '=';
-                                  break;
-                              case 2:
-                                  operator = 'not=';
-                                  break;
-                              case 3:
-                                  operator = '>';
-                                  break;
-                              case 4:
-                                  operator = '<';
-                                  break;
-                              case 5:
-                                  regexParsed = '#\"(?i).*' + cond.operand + '.*\"';
-                                  parsedCond = new jsedn.List([jsedn.sym('not'),
+                        break;
+                    case 1:
+                        operator = '=';
+                        break;
+                    case 2:
+                        operator = 'not=';
+                        break;
+                    case 3:
+                        operator = '>';
+                        break;
+                    case 4:
+                        operator = '<';
+                        break;
+                    case 5:
+                        regexParsed = '#\"(?i).*' + cond.operand + '.*\"';
+                        parsedCond = new jsedn.List([jsedn.sym('not'),
                                                                new jsedn.List([jsedn.sym('nil?'),
                                                                                 new jsedn.List([jsedn.sym('re-find'),
                                                                                                 new jsedn.List([jsedn.sym('read-string'), regexParsed]), jsedn.sym(cond.column.value)])])]);
-                                  break;
-                              default:
+                        break;
+                    default:
 
-                                  var condElems = cond.operand.split(" ");
-                                  for (var j = 0; j < condElems.length; ++j)
-                                      condElems[j] = new jsedn.sym(condElems[j]);
-                                  parsedCond = new jsedn.List(condElems);
-                                  break;
+                        var condElems = cond.operand.split(" ");
+                        for (var j = 0; j < condElems.length; ++j)
+                            condElems[j] = new jsedn.sym(condElems[j]);
+                        parsedCond = new jsedn.List(condElems);
+                        break;
 
 
-                          }
+                }
 
-                      if (parsedCond !== undefined) {
+                if (parsedCond !== undefined) {
 
-                          parsedConditions.push(parsedCond);
-                      }
-                      else {
-                          if (isNaN(cond.operand)) {
-                            parsedConditions.push(new jsedn.List([jsedn.sym(operator), jsedn.sym(cond.column.value), cond.operand]));
-                          }
-                          else {
-                              parsedConditions.push(new jsedn.List([jsedn.sym(operator), jsedn.sym(cond.column.value), Number(cond.operand)]));
-                          }
-                      }
-                  }
-        return parsedConditions;
+                    parsedConditions.push(parsedCond);
+                } else {
+                    if (isNaN(cond.operand)) {
+                        parsedConditions.push(new jsedn.List([jsedn.sym(operator), jsedn.sym(cond.column.value), cond.operand]));
+                    } else {
+                        parsedConditions.push(new jsedn.List([jsedn.sym(operator), jsedn.sym(cond.column.value), Number(cond.operand)]));
+                    }
+                }
+            }
+            return parsedConditions;
 
-    }
-    function constructConditionalNodeVectorJsEdn(node, currentNodeJsEdn) {
-        var modifCurrentNodeJsEdn = currentNodeJsEdn;
-        if (node.nodeCondition.length > 0) {
-            var parsedConditions = parseConditions(node.nodeCondition);
-                      if (parsedConditions.length === 1) {
-                          modifCurrentNodeJsEdn = new jsedn.List([jsedn.sym("if"),                                                                                                                parsedConditions[0],                                                         currentNodeJsEdn]);
-                      }
-                      else {
-                           modifCurrentNodeJsEdn = new jsedn.List([jsedn.sym("if"),                                                                                                                parsedConditions[0],                                                         currentNodeJsEdn]);
-                      }
+        }
 
-             }
+        function constructConditionalNodeVectorJsEdn(node, currentNodeJsEdn) {
+            var modifCurrentNodeJsEdn = currentNodeJsEdn;
+            if (node.nodeCondition.length > 0) {
+                var parsedConditions = parseConditions(node.nodeCondition);
+                if (parsedConditions.length === 1) {
+                    modifCurrentNodeJsEdn = new jsedn.List([jsedn.sym("if"), parsedConditions[0], currentNodeJsEdn]);
+                } else {
+                    modifCurrentNodeJsEdn = new jsedn.List([jsedn.sym("if"), parsedConditions[0], currentNodeJsEdn]);
+                }
 
-        return modifCurrentNodeJsEdn;
-    }
-  /* Constructs and returns the RDF creation function. */
-  function constructRDFGraphFunction(transformation) {
-    //var prefixersInGUI = transformation.prefixers;
-    var i;
-    var j;
-    var currentGraph = null;
+            }
 
-    var colKeysClj = new jsedn.Vector([]);
-    var columnKeysFromPipeline = transformation.getColumnKeysFromPipeline();
+            return modifCurrentNodeJsEdn;
+        }
+        /* Constructs and returns the RDF creation function. */
+        function constructRDFGraphFunction(transformation) {
+            //var prefixersInGUI = transformation.prefixers;
+            var i;
+            var j;
+            var currentGraph = null;
 
-    for (i = 0; i < columnKeysFromPipeline.length; ++i) {
-      colKeysClj.val.push(new jsedn.sym(columnKeysFromPipeline[i]));
-    }
+            var colKeysClj = new jsedn.Vector([]);
+            var columnKeysFromPipeline = transformation.getColumnKeysFromPipeline();
 
-    var columnKeysFromGraph = transformation.getColumnKeysFromGraphNodes();
+            for (i = 0; i < columnKeysFromPipeline.length; ++i) {
+                colKeysClj.val.push(new jsedn.sym(columnKeysFromPipeline[i]));
+            }
 
-    for (i = 0; i < columnKeysFromGraph.length; ++i)
-      if (columnKeysFromPipeline.indexOf(columnKeysFromGraph[i]) === -1 && typeof columnKeysFromGraph[i] ===
-          'string') {
-        colKeysClj.val.push(new jsedn.sym(columnKeysFromGraph[i]));
-      }
+            var columnKeysFromGraph = transformation.getColumnKeysFromGraphNodes();
 
-    var graphFunction = new jsedn.List([
+            for (i = 0; i < columnKeysFromGraph.length; ++i)
+                if (columnKeysFromPipeline.indexOf(columnKeysFromGraph[i]) === -1 && typeof columnKeysFromGraph[i] ===
+                    'string') {
+                    colKeysClj.val.push(new jsedn.sym(columnKeysFromGraph[i]));
+                }
+
+            var graphFunction = new jsedn.List([
       new jsedn.sym('graph-fn'),
       new jsedn.Vector([
         new jsedn.Map([new jsedn.kw(':keys'), colKeysClj])
       ])
     ]);
 
-    var currentGraphJsEdn = null;
-    var currentRootJsEdn = null;
-    for (i = 0; i < transformation.graphs.length; ++i) {
-      currentGraph = transformation.graphs[i];
+            var currentGraphJsEdn = null;
+            var currentRootJsEdn = null;
+            for (i = 0; i < transformation.graphs.length; ++i) {
+                currentGraph = transformation.graphs[i];
 
-      currentGraphJsEdn = new jsedn.List([jsedn.sym('graph'), currentGraph.graphURI]);
+                currentGraphJsEdn = new jsedn.List([jsedn.sym('graph'), currentGraph.graphURI]);
 
-      // construct a vector for each of the roots and add it to the graph jsedn
-      for (j = 0; j < currentGraph.graphRoots.length; ++j) {
+                // construct a vector for each of the roots and add it to the graph jsedn
+                for (j = 0; j < currentGraph.graphRoots.length; ++j) {
 
-        currentRootJsEdn = constructNodeVectorEdn(currentGraph.graphRoots[j], currentGraph);
+                    currentRootJsEdn = constructNodeVectorEdn(currentGraph.graphRoots[j], currentGraph,currentGraphJsEdn);
 
 
 
-        if (currentRootJsEdn) {
-          if (currentRootJsEdn.constructor === Array) {
-              for (var i = 0; i < currentRootJsEdn.length; ++i) {
+                    if (currentRootJsEdn) {
+                        if (currentRootJsEdn.constructor === Array) {
+                            for (var i = 0; i < currentRootJsEdn.length; ++i) {
 
-                  currentGraphJsEdn.val.push(constructConditionalNodeVectorJsEdn(currentGraph.graphRoots[j],currentRootJsEdn[i]));
+                                currentGraphJsEdn.val.push(constructConditionalNodeVectorJsEdn(currentGraph.graphRoots[j], currentRootJsEdn[i]));
 
-              }
-          }
-            else {
-                currentGraphJsEdn.val.push(constructConditionalNodeVectorJsEdn(currentGraph.graphRoots[j],currentRootJsEdn));
+                            }
+                        } else {
+                            currentGraphJsEdn.val.push(constructConditionalNodeVectorJsEdn(currentGraph.graphRoots[j], currentRootJsEdn));
+
+                        }
+
+
+                    }
+
+
+
+
+                }
+
+                graphFunction.val.push(currentGraphJsEdn);
+            }
+
+            var result = new jsedn.List([jsedn.sym('def'), jsedn.sym('make-graph'), graphFunction]);
+
+            return result;
+        }
+    
+    function constructNodeSubElementsEdn (node, containingGraph,currentGraphJsEdn, allSubElementsArray, nonCondSubElementsVector) {
+        var subElementEdn;
+        
+         for (var k = 0; k < node.subElements.length; ++k) {
+                      
+                        subElementEdn = constructNodeVectorEdn(node.subElements[k], containingGraph,currentGraphJsEdn);
+                        if (subElementEdn) {
+                            if (node.subElements[k] instanceof transformationDataModel.Property) {
+                                
+                                
+                                var parsedConditions = [];
+                                if (node.subElements[k].propertyCondition.length > 0) {
+                                    var condSubElementsVector = new jsedn.Vector([constructColumnURINodeJsEdn(node, containingGraph), subElementEdn]);
+                                    parsedConditions = parseConditions(node.subElements[k].propertyCondition);
+
+                                    if (parsedConditions.length === 1) {
+                                        allSubElementsArray.push(new jsedn.List([jsedn.sym("if"), parsedConditions[0],
+                                                                   condSubElementsVector]));
+                                    } else {
+                                        allSubElementsArray.push(new jsedn.List([jsedn.sym("if"), parsedConditions[0], condSubElementsVector])); /*!!!!!!!!!*/
+                                    }
+
+                                } else
+                                if (node.subElements[k].subElements[0].nodeCondition.length > 0) {
+
+                                    var condSubElementsVector = new jsedn.Vector([constructColumnURINodeJsEdn(node, containingGraph), subElementEdn]);
+                                    parsedConditions = parseConditions(node.subElements[k].subElements[0].nodeCondition);
+
+                                    //                    console.log(parsedConditions.length);
+                                    if (parsedConditions.length === 1) {
+                                        allSubElementsArray.push(new jsedn.List([jsedn.sym("if"), parsedConditions[0], condSubElementsVector]));
+                                    } else {
+                                        allSubElementsArray.push(new jsedn.List([jsedn.sym("if"), parsedConditions[0], condSubElementsVector])); /*!!!!!!!!!*/
+                                    }
+                                } else {
+                                    //allSubElementsVector.val.push(subElementEdn);
+                                    nonCondSubElementsVector.val.push(subElementEdn);
+                                }
+                            
+                            }
+                        }
+                    }
+    }
+
+     function constructNodeTypeVector (node, containingGraph,currentGraphJsEdn)
+    {
+        var rdfA, nodeType;
+                        if (isProbablyURI(node.rdfType)) {
+                            nodeType = new transformationDataModel.ConstantURI('', node.rdfType, null,[],[]);
+                            
+                        } else {
+                            if (node.rdfType.indexOf(':') !== -1) {
+                                nodeType = new transformationDataModel.ConstantURI(node.rdfType.substring(0, node.rdfType.indexOf(':')), node.rdfType.substring(node.rdfType.indexOf(':') + 1, node.rdfType.length), null, [], []);
+                            
+                         
+                                typePrefixes.push({prefix: node.rdfType.substring(0, node.rdfType.indexOf(':')),
+                                                  name: node.rdfType.substring(node.rdfType.indexOf(':') + 1, node.rdfType.length), exists:false});
+                            
+                            }
+                            //TODO:Proper error handling
+                            else {
+                                console.log("Type definition error");
+                            }
+                        }
+     
+                        rdfA = new transformationDataModel.Property("rdf", "a", [new transformationDataModel.Condition(null, null, null, null)], [nodeType],false);
+
+                        return constructNodeVectorEdn(rdfA, containingGraph,currentGraphJsEdn);
+        
+    }
+    
+        function constructNodeVectorEdn(node, containingGraph,currentGraphJsEdn) {
+
+
+            var i;
+            var k;
+            var allSubElementsVector;
+            var nonCondSubElementsVector;
+            var subElementEdn;
+            if (!node) {
+                return;
+            }
+            node = transformationDataModel.getGraphElement(node);
+
+            if (node instanceof transformationDataModel.Property /*&& (node.propertyCondition === undefined || node.propertyCondition === '')*/ ) {
+
+                if (node.subElements.length === 0) {
+                    //        alertInterface('Error found in RDF mapping for the sub-elements node ' + node.propertyName + '!');
+                    // not a big deal - just not valid provided mapping
+                    // maybe make it highlighted? (should do that later on)
+                    return;
+                }
+
+                var propertyValue = node.subElements[0];
+                var propertyJsEdn = constructPropertyJsEdn(node);
+            
+                var nodeVectorJsEdn = constructNodeVectorEdn(propertyValue, containingGraph,currentGraphJsEdn);
+                if (propertyJsEdn && nodeVectorJsEdn) {
+                    return new jsedn.Vector([propertyJsEdn, nodeVectorJsEdn]);
+                } else {
+                    return;
+                }
+                // [name {either single node or URI node with sub-nodes (as vector)}
 
             }
 
+            if (node instanceof transformationDataModel.ColumnLiteral) {
 
-        }
+                if (node.literalValue.value.trim() === '') {
+                    alertInterface('Empty column literal mapping found!');
+                }
 
+                // return the value as symbol
+                var value;
+                if (node.datatype.name === 'unspecified') {
 
+                    value = new jsedn.sym(node.literalValue.value);
 
+                } else {
 
-      }
+                    switch (node.datatype.name) {
+                        case 'string':
 
-      graphFunction.val.push(currentGraphJsEdn);
-    }
+                            var convertLiteralValues = [jsedn.sym("datatypes/convert-literal"), jsedn.sym(node.literalValue.value), "string"];
+                            if (node.onEmpty) {
+                                convertLiteralValues.push(jsedn.kw(":on-empty"));
+                                convertLiteralValues.push(node.onEmpty);
+                            }
+                            if (node.langTag) {
+                                convertLiteralValues.push(jsedn.kw(":lang-tag"));
+                                convertLiteralValues.push(node.langTag);
+                            }
+                            value = new jsedn.List(convertLiteralValues);
+                            break;
+                        case 'byte':
+                        case 'short':
+                        case 'integer':
+                        case 'long':
+                        case 'decimal':
+                        case 'float':
+                        case 'double':
+                        case 'boolean':
+                        case 'datetime':
+                            var convertLiteralValues = [jsedn.sym("datatypes/convert-literal"), jsedn.sym(node.literalValue.value), (node.datatype.name === 'datetime') ? 'date' : node.datatype.name];
 
-    var result = new jsedn.List([jsedn.sym('def'), jsedn.sym('make-graph'), graphFunction]);
+                            if (node.onEmpty) {
+                                convertLiteralValues.push(jsedn.kw(":on-empty"));
+                                convertLiteralValues.push(node.onEmpty);
+                            }
+                            if (node.onError) {
+                                convertLiteralValues.push(jsedn.kw(":on-error"));
+                                convertLiteralValues.push(node.onError);
+                            }
+                            value = new jsedn.List(convertLiteralValues);
+                            break;
 
-    return result;
-  }
-
-  function constructNodeVectorEdn(node, containingGraph) {
-    var i;
-    var k;
-    var allSubElementsVector;
-    var nonCondSubElementsVector;
-    var subElementEdn;
-    if (!node) {
-      return;
-    }
-    node = transformationDataModel.getGraphElement(node);
-
-    if (node instanceof transformationDataModel.Property /*&& (node.propertyCondition === undefined || node.propertyCondition === '')*/) {
-
-      if (node.subElements.length === 0) {
-        //        alertInterface('Error found in RDF mapping for the sub-elements node ' + node.propertyName + '!');
-        // not a big deal - just not valid provided mapping
-        // maybe make it highlighted? (should do that later on)
-        return;
-      }
-
-      var propertyValue = node.subElements[0];
-      var propertyJsEdn = constructPropertyJsEdn(node);
-      var nodeVectorJsEdn = constructNodeVectorEdn(propertyValue, containingGraph);
-      if (propertyJsEdn && nodeVectorJsEdn) {
-        return new jsedn.Vector([propertyJsEdn, nodeVectorJsEdn]);
-      } else {
-        return;
-      }
-      // [name {either single node or URI node with sub-nodes (as vector)}
-
-    }
-
-    if (node instanceof transformationDataModel.ColumnLiteral) {
-
-      if (node.literalValue.value.trim() === '') {
-        alertInterface('Empty column literal mapping found!');
-      }
-
-      // return the value as symbol
-      var value;
-       if (node.datatype.name === 'unspecified') {
-
-          value = new jsedn.sym(node.literalValue.value);
-
-       }
-       else {
-
-           switch (node.datatype.name) {
-               case 'string':
-
-                  var convertLiteralValues = [jsedn.sym("datatypes/convert-literal"), jsedn.sym(node.literalValue.value), "string"];
-                   if (node.onEmpty) {
-                       convertLiteralValues.push(jsedn.kw(":on-empty"));
-                       convertLiteralValues.push(node.onEmpty);
-                   }
-                   if (node.langTag) {
-                       convertLiteralValues.push(jsedn.kw(":lang-tag"));
-                       convertLiteralValues.push(node.langTag);
-                   }
-                   value = new jsedn.List(convertLiteralValues);
-                   break;
-               case 'byte':
-               case 'short':   
-               case 'integer':    
-                   case 'long':
-                   case 'decimal':
-                   case 'float':
-                   case 'double':
-                   case 'boolean':
-                   case 'datetime':
-                    var convertLiteralValues = [jsedn.sym("datatypes/convert-literal"),jsedn.sym(node.literalValue.value), (node.datatype.name==='datetime')?'date':node.datatype.name];
-
-                   if (node.onEmpty) {
-                       convertLiteralValues.push(jsedn.kw(":on-empty"));
-                       convertLiteralValues.push(node.onEmpty);
-                   }
-                   if (node.onError) {
-                       convertLiteralValues.push(jsedn.kw(":on-error"));
-                       convertLiteralValues.push(node.onError);
-                   }
-                   value = new jsedn.List(convertLiteralValues);
-                   break;
-                   
-               default:
-                   if (node.datatypeURI.trim() === '') {
-                       alertInterface('Unspecified URI for custom data type!');
-                   }
-                   else {
-                       value = new jsedn.List([jsedn.sym("s"),
+                        default:
+                            if (node.datatypeURI.trim() === '') {
+                                alertInterface('Unspecified URI for custom data type!');
+                            } else {
+                                value = new jsedn.List([jsedn.sym("s"),
                                                jsedn.sym(node.literalValue.value),
                                                new jsedn.List([jsedn.sym("org.openrdf.model.impl.URIImpl."), node.datatypeURI])]);
-                   }
-                   break;
-               
-           }
-       }
+                            }
+                            break;
 
-       return value;
-    }
+                    }
+                }
 
-    if (node instanceof transformationDataModel.ConstantLiteral) {
-      if (node.literalValue.trim() === '') {
-        alertInterface('Empty text literal found in RDF mapping!');
-      }
-
-      // Check if value is URI, if not -- define it as a string literal
-
-      var isURI = node.literalValue.search(/(http|https):\/\//);
-
-      var values = [];
-      if (isURI !== 0) {
-        if (Number.isNaN(parseFloat(node.literalValue))) {
-          values.push(jsedn.sym('s'));
-        } else {
-          if (Number.isInteger(parseFloat(node.literalValue))) {
-            values.push(jsedn.sym('Integer/parseInt'));
-          } else {
-            values.push(jsedn.sym('Double/parseDouble'));
-          }
-        }
-      }
-
-      values.push(node.literalValue);
-
-      if (isURI !== 0) {
-        return new jsedn.List(values);
-      }
-
-      return node.literalValue;
-
-    }
-
-    if (node instanceof transformationDataModel.ColumnURI) {
-        var allSubElementsArray = [];
-      if (node.subElements.length === 0) {
-        // we terminate by this URI, return the column
-        // TODO check in keywords array if this exists
-        return constructColumnURINodeJsEdn(node, containingGraph);
-
-      } else {
-        // [node-uri-as-generated {sub-1's edn representation} {sub-2's edn representation} ... {sub-n's edn representation}]
-        //allSubElementsVector = new jsedn.Vector([constructColumnURINodeJsEdn(node, containingGraph)]);
-        nonCondSubElementsVector = new jsedn.Vector([constructColumnURINodeJsEdn(node, containingGraph)]);
-        for (k = 0; k < node.subElements.length; ++k) {
-          subElementEdn = constructNodeVectorEdn(node.subElements[k]);
-          if (subElementEdn) {
-               if (node.subElements[k] instanceof transformationDataModel.Property) {
-                  var parsedConditions = [];
-                  if (node.subElements[k].propertyCondition.length > 0) {
-                      var condSubElementsVector = new jsedn.Vector([constructColumnURINodeJsEdn(node, containingGraph),subElementEdn]);
-                      parsedConditions = parseConditions(node.subElements[k].propertyCondition);
-
-                      if (parsedConditions.length === 1) {
-                          allSubElementsArray.push(new jsedn.List([jsedn.sym("if"),                                                                                                                parsedConditions[0],
-                                                                   condSubElementsVector]));
-                      }
-                      else {
-                           allSubElementsArray.push(new jsedn.List([jsedn.sym("if"),                                                                                                               parsedConditions[0],                                                                                                           condSubElementsVector])); /*!!!!!!!!!*/
-                      }
-
-             }
-            else
-              if (node.subElements[k].subElements[0].nodeCondition.length > 0) {
-
-                var condSubElementsVector = new jsedn.Vector([constructColumnURINodeJsEdn(node, containingGraph),subElementEdn]);
-                parsedConditions = parseConditions(node.subElements[k].subElements[0].nodeCondition);
-
-  //                    console.log(parsedConditions.length);
-                if (parsedConditions.length === 1) {
-                    allSubElementsArray.push(new jsedn.List([jsedn.sym("if"),                                                                                                                parsedConditions[0],                                                                                                            condSubElementsVector]));
-                      }
-                else {
-                    allSubElementsArray.push(new jsedn.List([jsedn.sym("if"),                                                                                                                parsedConditions[0],                                                                                                            condSubElementsVector])); /*!!!!!!!!!*/
-                      }
-             }
-             else {
-            //allSubElementsVector.val.push(subElementEdn);
-            nonCondSubElementsVector.val.push(subElementEdn);
-             }
-          }
-        }
-        }
-          allSubElementsArray.push(nonCondSubElementsVector);
-
-          return allSubElementsArray;
-        //return allSubElementsVector;
-      }
-
-    }
-
-    if (node instanceof transformationDataModel.ConstantURI) {
-      var allSubElementsArray = [];
-      if (node.subElements.length === 0) {
-        // return the column - single-noded graph
-        // TODO check in keywords array if this exists
-        var nodeText = constructConstantURINodeJsEdn(node, containingGraph);
-        return nodeText;
-
-      }
-        /*else {
-        // [node-uri-as-generated {sub-1's edn representation} {sub-2's edn representation} ... {sub-n's edn representation}]
-        allSubElementsVector = new jsedn.Vector([constructConstantURINodeJsEdn(node, containingGraph)]);
-        for (i = 0; i < node.subElements.length; ++i) {
-          if (node.subElements[i]) {
-            subElementEdn = constructNodeVectorEdn(node.subElements[i]);
-            if (subElementEdn) {
-              allSubElementsVector.val.push(subElementEdn);
+                return value;
             }
-          }
-        }
 
-        return allSubElementsVector;
-      }*/
+            if (node instanceof transformationDataModel.ConstantLiteral) {
+                if (node.literalValue.trim() === '') {
+                    alertInterface('Empty text literal found in RDF mapping!');
+                }
 
-        else {
-        // [node-uri-as-generated {sub-1's edn representation} {sub-2's edn representation} ... {sub-n's edn representation}]
-        //allSubElementsVector = new jsedn.Vector([constructColumnURINodeJsEdn(node, containingGraph)]);
-        nonCondSubElementsVector = new jsedn.Vector([constructConstantURINodeJsEdn(node, containingGraph)]);
-        for (k = 0; k < node.subElements.length; ++k) {
-          subElementEdn = constructNodeVectorEdn(node.subElements[k]);
-          if (subElementEdn) {
-               if (node.subElements[k] instanceof transformationDataModel.Property) {
-                  var parsedConditions = [];
-                  if (node.subElements[k].propertyCondition.length > 0) {
-                      var condSubElementsVector = new jsedn.Vector([constructConstantURINodeJsEdn(node, containingGraph),subElementEdn]);
-                      parsedConditions = parseConditions(node.subElements[k].propertyCondition);
+                // Check if value is URI, if not -- define it as a string literal
 
-                      if (parsedConditions.length === 1) {
-                          allSubElementsArray.push(new jsedn.List([jsedn.sym("if"),                                                                                                                parsedConditions[0],
-                                                                   condSubElementsVector]));
-                      }
-                      else {
-                           allSubElementsArray.push(new jsedn.List([jsedn.sym("if"),                                                                                                               parsedConditions[0],                                                                                                           condSubElementsVector])); /*!!!!!!!!!*/
-                      }
+                var isURI = node.literalValue.search(/(http|https):\/\//);
 
-             }
-            else
-              if (node.subElements[k].subElements[0].nodeCondition.length > 0) {
+                var values = [];
+                if (isURI !== 0) {
+                    if (Number.isNaN(parseFloat(node.literalValue))) {
+                        values.push(jsedn.sym('s'));
+                    } else {
+                        if (Number.isInteger(parseFloat(node.literalValue))) {
+                            values.push(jsedn.sym('Integer/parseInt'));
+                        } else {
+                            values.push(jsedn.sym('Double/parseDouble'));
+                        }
+                    }
+                }
 
-                var condSubElementsVector = new jsedn.Vector([constructConstantURINodeJsEdn(node, containingGraph),subElementEdn]);
-                parsedConditions = parseConditions(node.subElements[k].subElements[0].nodeCondition);
+                values.push(node.literalValue);
 
-  //                    console.log(parsedConditions.length);
-                if (parsedConditions.length === 1) {
-                    allSubElementsArray.push(new jsedn.List([jsedn.sym("if"),                                                                                                                parsedConditions[0],                                                                                                            condSubElementsVector]));
-                      }
+                if (isURI !== 0) {
+                    return new jsedn.List(values);
+                }
+
+                return node.literalValue;
+
+            }
+
+            if (node instanceof transformationDataModel.ColumnURI) {
+
+                var allSubElementsArray = [];
+                var onlyNestedSubelements=true;
+    for (k = 0; k < node.subElements.length; ++k) {
+         if (node.subElements[k] instanceof transformationDataModel.Property) {
+                                if (!node.subElements[k].isNested) 
+                                { onlyNestedSubelements = false;
+                                 break;
+                                }
+         }
+    }
+                
+                if (node.subElements.length === 0 || onlyNestedSubelements) {
+                    var newNode = new transformationDataModel.ColumnURI({id:0,value:node.prefix},node.column,null,[],[]);
+                    if (node.rdfType) {
+              
+                       
+                        
+                        currentGraphJsEdn.val.push(new jsedn.Vector([constructColumnURINodeJsEdn(newNode, containingGraph), constructNodeTypeVector(node, containingGraph,currentGraphJsEdn)]));
+                        
+                        
+                    } 
+                      
+                    if (onlyNestedSubelements) {
+                         nonCondSubElementsVector = new jsedn.Vector([constructColumnURINodeJsEdn(node, containingGraph)]);
+                        
+                        constructNodeSubElementsEdn(node, containingGraph,currentGraphJsEdn, allSubElementsArray, nonCondSubElementsVector);
+                        currentGraphJsEdn.val.push(nonCondSubElementsVector);
+                        if (allSubElementsArray.length > 0) currentGraphJsEdn.val.push(allSubElementsArray);
+                    }
+                    return constructColumnURINodeJsEdn(node, containingGraph);
+
+                } 
+                
                 else {
-                    allSubElementsArray.push(new jsedn.List([jsedn.sym("if"),                                                                                                                parsedConditions[0],                                                                                                            condSubElementsVector])); /*!!!!!!!!!*/
-                      }
-             }
-             else {
-            //allSubElementsVector.val.push(subElementEdn);
-            nonCondSubElementsVector.val.push(subElementEdn);
-             }
-          }
+                    
+                    nonCondSubElementsVector = new jsedn.Vector([constructColumnURINodeJsEdn(node, containingGraph)]);
+                    if (node.rdfType) {
+                        
+                      
+nonCondSubElementsVector.val.push(constructNodeTypeVector(node, containingGraph,currentGraphJsEdn));
+                    }
+
+                 
+                    constructNodeSubElementsEdn(node, containingGraph,currentGraphJsEdn, allSubElementsArray, nonCondSubElementsVector);
+                        allSubElementsArray.push(nonCondSubElementsVector);
+                        return allSubElementsArray;
+                    
+                        
+               
+                }
+
+            }
+
+            if (node instanceof transformationDataModel.ConstantURI) {
+              
+                var allSubElementsArray = [];
+                var onlyNestedSubelements=true;
+                 for (k = 0; k < node.subElements.length; ++k) {
+         if (node.subElements[k] instanceof transformationDataModel.Property) {
+                                if (!node.subElements[k].isNested) 
+                                { onlyNestedSubelements = false;
+                                 break;
+                                }
+         }
+    }
+                console.log(node);
+console.log(onlyNestedSubelements);
+                
+                if (node.subElements.length === 0 || onlyNestedSubelements) {
+                    // return the column - single-noded graph
+                    // TODO check in keywords array if this exists
+                    
+                    var newNode = new transformationDataModel.ConstantURI(node.prefix,node.constant,null,[],[]);
+                    var nodeText = constructConstantURINodeJsEdn(node, containingGraph);
+                     if (node.rdfType) {
+                         console.log(node);
+                         currentGraphJsEdn.val.push(new jsedn.Vector([constructConstantURINodeJsEdn(newNode, containingGraph), constructNodeTypeVector(node, containingGraph,currentGraphJsEdn)]));
+                        
+                        
+                    } 
+                    if (onlyNestedSubelements) {
+                         nonCondSubElementsVector = new jsedn.Vector([constructConstantURINodeJsEdn(node, containingGraph)]);
+                        
+                        constructNodeSubElementsEdn(node, containingGraph,currentGraphJsEdn, allSubElementsArray, nonCondSubElementsVector);
+                        currentGraphJsEdn.val.push(nonCondSubElementsVector);
+                        if (allSubElementsArray.length > 0) currentGraphJsEdn.val.push(allSubElementsArray);
+                    }
+                    return nodeText;
+
+                }
+               
+                else {
+                    // [node-uri-as-generated {sub-1's edn representation} {sub-2's edn representation} ... {sub-n's edn representation}]
+                    //allSubElementsVector = new jsedn.Vector([constructColumnURINodeJsEdn(node, containingGraph)]);
+                    nonCondSubElementsVector = new jsedn.Vector([constructConstantURINodeJsEdn(node, containingGraph)]);
+                    if (node.rdfType) {
+                        
+                      
+nonCondSubElementsVector.val.push(constructNodeTypeVector(node, containingGraph,currentGraphJsEdn));
+                    }
+                    constructNodeSubElementsEdn(node, containingGraph,currentGraphJsEdn, allSubElementsArray, nonCondSubElementsVector);
+
+                   /* for (k = 0; k < node.subElements.length; ++k) {
+                        subElementEdn = constructNodeVectorEdn(node.subElements[k],containingGraph,currentGraphJsEdn);
+                        if (subElementEdn) {
+                            if (node.subElements[k] instanceof transformationDataModel.Property) {
+                                var parsedConditions = [];
+                                if (node.subElements[k].propertyCondition.length > 0) {
+                                    var condSubElementsVector = new jsedn.Vector([constructConstantURINodeJsEdn(node, containingGraph), subElementEdn]);
+                                    parsedConditions = parseConditions(node.subElements[k].propertyCondition);
+
+                                    if (parsedConditions.length === 1) {
+                                        allSubElementsArray.push(new jsedn.List([jsedn.sym("if"), parsedConditions[0],
+                                                                   condSubElementsVector]));
+                                    } else {
+                                        allSubElementsArray.push(new jsedn.List([jsedn.sym("if"), parsedConditions[0], condSubElementsVector])); 
+                                    }
+
+                                } else
+                                if (node.subElements[k].subElements[0].nodeCondition.length > 0) {
+
+                                    var condSubElementsVector = new jsedn.Vector([constructConstantURINodeJsEdn(node, containingGraph), subElementEdn]);
+                                    parsedConditions = parseConditions(node.subElements[k].subElements[0].nodeCondition);
+
+                                
+                                    if (parsedConditions.length === 1) {
+                                        allSubElementsArray.push(new jsedn.List([jsedn.sym("if"), parsedConditions[0], condSubElementsVector]));
+                                    } else {
+                                        allSubElementsArray.push(new jsedn.List([jsedn.sym("if"), parsedConditions[0], condSubElementsVector])); 
+                                    }
+                                } else {
+                                    //allSubElementsVector.val.push(subElementEdn);
+                                    nonCondSubElementsVector.val.push(subElementEdn);
+                                }
+                            }
+                        }
+                    }*/
+                    allSubElementsArray.push(nonCondSubElementsVector);
+
+                    return allSubElementsArray;
+                    //return allSubElementsVector;
+                }
+
+            }
+
+            if (node instanceof transformationDataModel.BlankNode) {
+                if (node.subElements.length === 0) {
+                    return constructBlankNodeJsEdn(node, containingGraph);
+                } else {
+
+                    allSubElementsVector = new jsedn.Vector([]);
+
+                    for (k = 0; k < node.subElements.length; ++k) {
+                        subElementEdn = constructNodeVectorEdn(node.subElements[k],containingGraph,currentGraphJsEdn);
+
+                        if (subElementEdn) {
+                            allSubElementsVector.val.push(subElementEdn);
+                        }
+
+                    }
+
+                    return allSubElementsVector;
+                }
+            }
+
+            /*if (node instanceof transformationDataModel.BlankNode) {
+                // TODO not supported yet
+              }*/
         }
+
+        function constructPropertyJsEdn(property) {
+            // graph URI as prefix, add nothing
+            var propertyPrefix = property.prefix;
+            var propertyName = property.propertyName;
+            if (propertyPrefix === null) {
+                alertInterface('Property prefix cannot be null:' + propertyName + '. What happened?');
+                return;
+            } else if (propertyPrefix === '') {
+
+                if (isProbablyURI(propertyName)) {
+                    return propertyName;
+                } else {
+                    // property name has been omitted! - in that case we use the base graph URI
+                    // TODO - graph URI prefixer is currently hard-coded; when new graphs are added this will not work as intended
+                    return new jsedn.List([new jsedn.sym('graph0'), propertyName]);
+                }
+
+            } else {
+                if (isSupportedPrefix(propertyPrefix.trim())) {
+                    // assume it's a supported property
+                    return new jsedn.sym(propertyPrefix + ':' + propertyName);
+                } else {
+                    // TODO make a check if we have defined the prefix
+                    // some custom prefix, that is hopefully defined in the UI (Edit Prefixes...)
+                    return new jsedn.sym(propertyPrefix + ':' + propertyName);
+                }
+            }
+
         }
-          allSubElementsArray.push(nonCondSubElementsVector);
 
-          return allSubElementsArray;
-        //return allSubElementsVector;
-      }
+        function isProbablyURI(string) {
+            //    var url = new URI("foaf:asdf");
+            var uriRegEx = new RegExp('^' +
+                '(?:' +
+                '([^:/?#]+)' + // scheme
+                ':)?' +
+                '(?://' +
+                '(?:([^/?#]*)@)?' + // credentials
+                '([^/?#:@]*)' + // domain
+                '(?::([0-9]+))?' + // port
+                ')?' +
+                '([^?#]+)?' + // path
+                '(?:\\?([^#]*))?' + // query
+                '(?:#(.*))?' + // fragment
+                '$');
+            var match = ('' + string).match(uriRegEx);
 
-    }
+            // probably a full URI (and not a qualified name) if it has a scheme and a domain
+            if (match[1]) {
+                // has a scheme
+                if (match[3]) {
+                    // has a domain
+                    return true;
+                }
+            }
 
-    if (node instanceof transformationDataModel.BlankNode) {
-      if (node.subElements.length === 0) {
-        return constructBlankNodeJsEdn(node, containingGraph);
-      } else {
+            return false;
+        }
 
-        allSubElementsVector = new jsedn.Vector([]);
+        function constructColumnURINodeJsEdn(colURINode, containingGraph) {
+            // graph URI as prefix, add nothing
 
-        for (k = 0; k < node.subElements.length; ++k) {
-          subElementEdn = constructNodeVectorEdn(node.subElements[k]);
+            var nodePrefix = colURINode.prefix.hasOwnProperty('id') ? colURINode.prefix.value : colURINode.prefix;
+            var returnNode;
+            var nodeValue = colURINode.column.value;
+            if (nodePrefix === null || nodePrefix === undefined) {
+                // base graph URI
+                // ((prefixer "graphURI") nodeValue)
+                return new jsedn.List([new jsedn.List([new jsedn.sym('prefixer'), containingGraph.graphURI]), new jsedn.sym(
+                    nodeValue)]);
+            } else if (nodePrefix === '') {
+                // empty prefix - just take the column as symbol
+                // nodeValue
+                returnNode = new jsedn.sym(nodeValue);
+                //return new jsedn.sym(nodeValue);
+            } else {
+                if (isSupportedPrefix(nodePrefix.trim())) {
+                    // supported prefix - no need to use prefixer - simple library call
+                    // nodePrefix:nodeValue (e.g. vcard:Address)
+                    //        alertInterface('Cannot associate column \'' + nodeValue + '\' with prefix \'' + nodePrefix + '\'!');
 
-          if (subElementEdn) {
-            allSubElementsVector.val.push(subElementEdn);
-          }
+                    //                return;
+                    return new jsedn.sym(nodePrefix + ':' + nodeValue);
+                } else {
+                    // TODO make a check if we have defined the prefix
+                    // some custom prefix, that is hopefully defined in the UI (Edit Prefixes...)
+                    // both are symbols and we get (nodePrefix nodeValue) as a result
+                    return new jsedn.List([new jsedn.sym(nodePrefix), new jsedn.sym(nodeValue)]);
+                }
+            }
+          
 
         }
 
-        return allSubElementsVector;
-      }
-    }
+        function constructConstantURINodeJsEdn(constURINode, containingGraph) {
+            // graph URI as prefix, add nothing
+            var nodePrefix = constURINode.prefix;
+            var nodeValue = constURINode.constant;
+            if (nodePrefix === null || nodePrefix === undefined) {
+                // base graph URI
+                // ((prefixer 'graphURI') 'nodeValue')
+                return new jsedn.List([new jsedn.List([new jsedn.sym('prefixer'), containingGraph.graphURI]), nodeValue]);
+            } else if (nodePrefix === '') {
+                // empty prefix - just take the column as symbol
+                // nodeValue
+                return nodeValue;
+            } else {
+                if (isSupportedPrefix(nodePrefix.trim())) {
 
-    /*if (node instanceof transformationDataModel.BlankNode) {
-        // TODO not supported yet
-      }*/
-  }
+                    // nodePrefix:nodeValue (e.g. vcard:Address)
+                    return new jsedn.sym(nodePrefix + ':' + nodeValue);
 
-  function constructPropertyJsEdn(property) {
-    // graph URI as prefix, add nothing
-    var propertyPrefix = property.prefix;
-    var propertyName = property.propertyName;
-    if (propertyPrefix === null) {
-      alertInterface('Property prefix cannot be null:' + propertyName + '. What happened?');
-      return;
-    } else if (propertyPrefix === '') {
+                } else {
+                    // TODO make a check if we have defined the prefix
+                    // some custom prefix, that is hopefully defined in the UI (Edit Prefixes...)
+                    // both are symbols and we get (nodePrefix nodeValue) as a result
 
-      if (isProbablyURI(propertyName)) {
-        return propertyName;
-      } else {
-        // property name has been omitted! - in that case we use the base graph URI
-        // TODO - graph URI prefixer is currently hard-coded; when new graphs are added this will not work as intended
-        return new jsedn.List([new jsedn.sym('graph0'), propertyName]);
-      }
+                    return new jsedn.sym(nodePrefix + ':' + nodeValue);
+                }
+            }
 
-    } else {
-      if (isSupportedPrefix(propertyPrefix.trim())) {
-        // assume it's a supported property
-        return new jsedn.sym(propertyPrefix + ':' + propertyName);
-      } else {
-        // TODO make a check if we have defined the prefix
-        // some custom prefix, that is hopefully defined in the UI (Edit Prefixes...)
-        return new jsedn.sym(propertyPrefix + ':' + propertyName);
-      }
-    }
+            // prefix null, empty or undefined
+        }
 
-  }
-  function isProbablyURI(string) {
-    //    var url = new URI("foaf:asdf");
-    var uriRegEx = new RegExp('^' +
-                              '(?:' +
-                              '([^:/?#]+)' +         // scheme
-                              ':)?' +
-                              '(?://' +
-                              '(?:([^/?#]*)@)?' +    // credentials
-                              '([^/?#:@]*)' +        // domain
-                              '(?::([0-9]+))?' +     // port
-                              ')?' +
-                              '([^?#]+)?' +            // path
-                              '(?:\\?([^#]*))?' +      // query
-                              '(?:#(.*))?' +           // fragment
-                              '$');
-    var match = ('' + string).match(uriRegEx);
+        function constructBlankNodeJsEdn(blankNode, containingGraph) {
+            return new jsedn.Vector([]);
+        }
 
-    // probably a full URI (and not a qualified name) if it has a scheme and a domain
-    if (match[1]) {
-      // has a scheme
-      if (match[3]) {
-        // has a domain
-        return true;
-      }
-    }
-
-    return false;
-  }
-
-  function constructColumnURINodeJsEdn(colURINode, containingGraph) {
-    // graph URI as prefix, add nothing
-    var nodePrefix = colURINode.prefix.hasOwnProperty('id') ? colURINode.prefix.value : colURINode.prefix;
-
-    var nodeValue = colURINode.column.value;
-    if (nodePrefix === null || nodePrefix === undefined) {
-      // base graph URI
-      // ((prefixer "graphURI") nodeValue)
-      return new jsedn.List([new jsedn.List([new jsedn.sym('prefixer'), containingGraph.graphURI]), new jsedn.sym(
-        nodeValue)]);
-    } else if (nodePrefix === '') {
-      // empty prefix - just take the column as symbol
-      // nodeValue
-      return new jsedn.sym(nodeValue);
-    } else {
-      if (isSupportedPrefix(nodePrefix.trim())) {
-        // supported prefix - no need to use prefixer - simple library call
-        // nodePrefix:nodeValue (e.g. vcard:Address)
-//        alertInterface('Cannot associate column \'' + nodeValue + '\' with prefix \'' + nodePrefix + '\'!');
-
-        //                return;
-        return new jsedn.sym(nodePrefix + ':' + nodeValue);
-      } else {
-        // TODO make a check if we have defined the prefix
-        // some custom prefix, that is hopefully defined in the UI (Edit Prefixes...)
-        // both are symbols and we get (nodePrefix nodeValue) as a result
-        return new jsedn.List([new jsedn.sym(nodePrefix), new jsedn.sym(nodeValue)]);
-      }
-    }
-
-  }
-
-  function constructConstantURINodeJsEdn(constURINode, containingGraph) {
-    // graph URI as prefix, add nothing
-    var nodePrefix = constURINode.prefix;
-    var nodeValue = constURINode.constant;
-    if (nodePrefix === null || nodePrefix === undefined) {
-      // base graph URI
-      // ((prefixer 'graphURI') 'nodeValue')
-      return new jsedn.List([new jsedn.List([new jsedn.sym('prefixer'), containingGraph.graphURI]), nodeValue]);
-    } else if (nodePrefix === '') {
-      // empty prefix - just take the column as symbol
-      // nodeValue
-      return nodeValue;
-    } else {
-      if (isSupportedPrefix(nodePrefix.trim())) {
-
-        // nodePrefix:nodeValue (e.g. vcard:Address)
-        return new jsedn.sym(nodePrefix + ':' + nodeValue);
-
-      } else {
-        // TODO make a check if we have defined the prefix
-        // some custom prefix, that is hopefully defined in the UI (Edit Prefixes...)
-        // both are symbols and we get (nodePrefix nodeValue) as a result
-
-        return new jsedn.sym(nodePrefix + ':' + nodeValue);
-      }
-    }
-
-    // prefix null, empty or undefined
-  }
-
-  function constructBlankNodeJsEdn(blankNode, containingGraph) {
-    return new jsedn.Vector([]);
-  }
-
-  function tempCheckExistingVocabInGraft(prefix) {
-    var vocab = ['dcat', 'dcterms', 'foaf', 'statistical-entity', 'org', 'os', 'owl', 'pmd', 'qb', 'rdf',
+        function tempCheckExistingVocabInGraft(prefix) {
+            var vocab = ['dcat', 'dcterms', 'foaf', 'statistical-entity', 'org', 'os', 'owl', 'pmd', 'qb', 'rdf',
 
                  'rdfs', 'sdmx-attribute', 'sdmx-concept', 'sdmx-measure', 'skos', 'vcard', 'void', 'xsd'];
 
-    for (var i = 0; i < vocab.length; i++) {
-      if (vocab[i] === prefix) {
-        return false;
-      }
-    }
+            for (var i = 0; i < vocab.length; i++) {
+                if (vocab[i] === prefix) {
+                    return false;
+                }
+            }
 
-    return true;
-  }
+            return true;
+        }
 
-  function tempCheckExistingClassorPropertiesInGraft(prefix, name) {
-    var items = [
+        function tempCheckExistingClassorPropertiesInGraft(prefix, name) {
+            var items = [
       'owl:Ontology', 'owl:Class',
       'foaf:Person', 'foaf:age', 'foaf:depiction', 'foaf:gender', 'foaf:homepage', 'foaf:interest', 'foaf:knows',
       'foaf:name', 'foaf:nick',
@@ -871,260 +957,274 @@ angular.module('grafterizerApp')
       'void:Dataset', 'void:dataDump', 'void:sparqlEndpoint', 'void:triples', 'void:vocabulary',
     ];
 
-    for (var i = 0; i < items.length; i++) {
-      var str = prefix + ':' + name;
-      if (items[i] === str) {
-        return false;
-      }
-    }
+            for (var i = 0; i < items.length; i++) {
+                var str = prefix + ':' + name;
+                if (items[i] === str) {
+                    return false;
+                }
+            }
 
-    return true;
-  }
-
-  //check whether the prefix is added or not
-  var graphPrefix = [];
-
-  function isPrefixExist(prefix) {
-
-    for (var i = 0; i < graphPrefix.length; i++) {
-      if (graphPrefix[i] === prefix) {
-
-        return true;
-      }
-    }
-
-    graphPrefix.push(prefix);
-    return false;
-  }
-
-  var graphConcept = [];
-
-  function isConceptExist(prefix, concept) {
-
-    var name = prefix + ':' + concept;
-    for (var i = 0; i < graphConcept.length; i++) {
-      if (graphConcept[i] === name) {
-        return true;
-      }
-    }
-
-    graphConcept.push(name);
-    return false;
-  }
-
-  var namespaceMap = {
-    prefix: '',
-    namespace: '',
-  };
-
-  var namespaceMaps = [];
-
-  //load a mapping between prefix and namespace from windows localStorage.
-  //the storage is edited in propertydialog.js and mappingnodedefinitiondialog.js
-  function loadNamespaceMapping(localVocabularies) {
-    //load user defined vocabulary
-    if (!localVocabularies) {
-      return;
-    }
-
-    for (var i = localVocabularies.length - 1; i >= 0; i--) {
-      namespaceMap = {};
-
-      namespaceMap.prefix = localVocabularies[i].name;
-      namespaceMap.namespace = localVocabularies[i].namespace;
-      namespaceMaps.push(namespaceMap);
-    }
-  }
-
-  //get namespace based on prefix
-  function getNamespaceofPrefix(prefix) {
-    for (var i = 0; i < namespaceMaps.length; i++) {
-      if (namespaceMaps[i].prefix === prefix) {
-        return namespaceMaps[i].namespace;
-      }
-    }
-
-    return '';
-  }
-
-  // recursive function to add clojure code about property and class
-  function getConcept(element, str, containingGraph, prefixersInGUI) {
-    var i;
-
-    //define vocabulary
-      var elementPrefix =   (element.prefix !== undefined && element.prefix.hasOwnProperty('id') ? element.prefix.value : element.prefix);
-    if (elementPrefix !== '' && elementPrefix !== undefined) {
-
-      if (!isPrefixExist(elementPrefix)) {
-        if (tempCheckExistingVocabInGraft(elementPrefix)) {
-          var namespace = getNamespaceofPrefix(elementPrefix);
-          var existsInGUI = false;
-          for (i = 0; i < prefixersInGUI.length; ++i) {
-            if (prefixersInGUI[i].name === elementPrefix) existsInGUI = true;
-          }
-
-          if (namespace !== '' && namespace !== undefined) {
-
-            str += ('(def ' + elementPrefix + ' (prefixer ' + '"' + namespace + '"' + ')) ');
-            str += '\n';
-          } else if (!existsInGUI) {
-            str += ('(def '  + elementPrefix +  ' (prefixer ' + '"' + containingGraph.graphURI + '"' + '))');
-            str += '\n';
-          }
+            return true;
         }
-      }
 
-      //define property
-      if (element.__type === 'Property') {
-        if (!isConceptExist(element.prefix, element.propertyName)) {
-          if (tempCheckExistingClassorPropertiesInGraft(element.prefix, element.propertyName)) {
-            str += '(def ' + element.prefix + ':' + element.propertyName + ' (' + element.prefix + ' "' + element.propertyName +
-              '"))';
-            str += '\n';
-          }
+        //check whether the prefix is added or not
+        var graphPrefix = [];
+
+        function isPrefixExist(prefix) {
+
+            for (var i = 0; i < graphPrefix.length; i++) {
+                if (graphPrefix[i] === prefix) {
+
+                    return true;
+                }
+            }
+
+            graphPrefix.push(prefix);
+            return false;
         }
-      }
 
-      //define class
-      if (element.__type === 'ConstantURI') {
-        if (!isConceptExist(element.prefix, element.constant)) {
-          if (tempCheckExistingClassorPropertiesInGraft(element.prefix, element.constant)) {
-            str += '(def ' + element.prefix + ':' + element.constant + ' (' + element.prefix + ' "' + element.constant +
-              '"))';
-            str += '\n';
-          }
+        var graphConcept = [];
+
+        function isConceptExist(prefix, concept) {
+
+            var name = prefix + ':' + concept;
+            for (var i = 0; i < graphConcept.length; i++) {
+                if (graphConcept[i] === name) {
+                    return true;
+                }
+            }
+
+            graphConcept.push(name);
+            return false;
         }
-      }
+
+        var namespaceMap = {
+            prefix: '',
+            namespace: '',
+        };
+
+        var namespaceMaps = [];
+
+        //load a mapping between prefix and namespace from windows localStorage.
+        //the storage is edited in propertydialog.js and mappingnodedefinitiondialog.js
+        function loadNamespaceMapping(localVocabularies) {
+            //load user defined vocabulary
+            if (!localVocabularies) {
+                return;
+            }
+
+            for (var i = localVocabularies.length - 1; i >= 0; i--) {
+                namespaceMap = {};
+
+                namespaceMap.prefix = localVocabularies[i].name;
+                namespaceMap.namespace = localVocabularies[i].namespace;
+                namespaceMaps.push(namespaceMap);
+            }
+        }
+
+        //get namespace based on prefix
+        function getNamespaceofPrefix(prefix) {
+            for (var i = 0; i < namespaceMaps.length; i++) {
+                if (namespaceMaps[i].prefix === prefix) {
+                    return namespaceMaps[i].namespace;
+                }
+            }
+
+            return '';
+        }
+
+    function getTypePrefixes() {
+        var str='';
+        for (var i=0; i<typePrefixes.length;++i) {
+            if (!typePrefixes[i].exists === true) {
+             str += ('(def ' + typePrefixes[i].prefix + ':' + typePrefixes[i].name + ' ( '+ typePrefixes[i].prefix + ' "' + typePrefixes[i].name + '"' + ')) ');
+             str += '\n';
+            typePrefixes[i].exists = true;      
+            }
+        }
+      
+        return str;
+        
     }
+        // recursive function to add clojure code about property and class
+        function getConcept(element, str, containingGraph, prefixersInGUI) {
+            var i;
 
-    //recursive: do the same for all sub elements
-    for (i = 0; i < element.subElements.length; i++) {
-      str = getConcept(element.subElements[i], str, containingGraph, prefixersInGUI);
-    }
+            //define vocabulary
+            var elementPrefix = (element.prefix !== undefined && element.prefix.hasOwnProperty('id') ? element.prefix.value : element.prefix);
+            if (elementPrefix !== '' && elementPrefix !== undefined) {
 
-    return str;
-  }
+                if (!isPrefixExist(elementPrefix)) {
+                    if (tempCheckExistingVocabInGraft(elementPrefix)) {
+                        var namespace = getNamespaceofPrefix(elementPrefix);
+                        var existsInGUI = false;
+                        for (i = 0; i < prefixersInGUI.length; ++i) {
+                            if (prefixersInGUI[i].name === elementPrefix) existsInGUI = true;
+                        }
 
-  function generateGrafterCode(transformation) {
-    /* Grafter Declarations */
+                        if (namespace !== '' && namespace !== undefined) {
 
-    // TODO those are not needed here; may be needed afterwards?
-    //    var grafterDeclarations = constructGrafterDeclarations();
-    if (!transformation) return '';
+                            str += ('(def ' + elementPrefix + ' (prefixer ' + '"' + namespace + '"' + ')) ');
+                            str += '\n';
+                        } else if (!existsInGUI) {
+                            str += ('(def ' + elementPrefix + ' (prefixer ' + '"' + containingGraph.graphURI + '"' + '))');
+                            str += '\n';
+                        }
+                    }
+                }
 
-    /* Prefixers */
-    graphPrefix = [];
-    graphConcept = [];
-    var prefixersInGUI = transformation.prefixers;
-    // add only custom prefixers - the Grafter ones are available by default
-    for (var i = 0; i < prefixersInGUI.length; ++i) {
-      var name = prefixersInGUI[i].name;
-      var uri = prefixersInGUI[i].uri;
-      var parentPrefix = prefixersInGUI[i].parentPrefix;
-      if (name === '' || uri === '') {
-        alertInterface('Name or URI of a prefix empty, ignoring...', '');
-        continue;
-      }
+                //define property
+                if (element.__type === 'Property') {
+                    if (!isConceptExist(element.prefix, element.propertyName)) {
+                        if (tempCheckExistingClassorPropertiesInGraft(element.prefix, element.propertyName)) {
+                            str += '(def ' + element.prefix + ':' + element.propertyName + ' (' + element.prefix + ' "' + element.propertyName +
+                                '"))';
+                            str += '\n';
+                        }
+                    }
+                }
 
-      addGrafterPrefixer(name, uri, parentPrefix);
-    }
+                //define class
+                if (element.__type === 'ConstantURI') {
+                    if (!isConceptExist(element.prefix, element.constant)) {
+                        if (tempCheckExistingClassorPropertiesInGraft(element.prefix, element.constant)) {
+                            str += '(def ' + element.prefix + ':' + element.constant + ' (' + element.prefix + ' "' + element.constant +
+                                '"))';
+                            str += '\n';
+                        }
+                    }
+                }
+            }
 
-    // add prefixers for each graph
+            //recursive: do the same for all sub elements
+            for (i = 0; i < element.subElements.length; i++) {
+                str = getConcept(element.subElements[i], str, containingGraph, prefixersInGUI);
+            }
 
-    for (i = 0; i < transformation.graphs.length; ++i) {
-      addGrafterPrefixer('graph' + i, transformation.graphs[i].graphURI, '');
-    }
+            return str;
+        }
 
-    var grafterPrefixers = constructGrafterPrefixersArray();
-    /* User functions */
+        function generateGrafterCode(transformation) {
+            /* Grafter Declarations */
 
-    //    var customFunctionsMap = transformation.customFunctionDeclarations;
-    for (i = 0; i < transformation.customFunctionDeclarations.length; ++i) {
-      /*Regex parsing*/
-      var codeToParse = transformation.customFunctionDeclarations[i].clojureCode;
-      var regexesPattern = /#"(.*?)"/g;
+            // TODO those are not needed here; may be needed afterwards?
+            //    var grafterDeclarations = constructGrafterDeclarations();
+            if (!transformation) return '';
 
-      var regexes = regexesPattern.exec(codeToParse);
-      var newstring;
-      while (regexes) {
+            /* Prefixers */
+            graphPrefix = [];
+            graphConcept = [];
+            var prefixersInGUI = transformation.prefixers;
+            // add only custom prefixers - the Grafter ones are available by default
+            for (var i = 0; i < prefixersInGUI.length; ++i) {
+                var name = prefixersInGUI[i].name;
+                var uri = prefixersInGUI[i].uri;
+                var parentPrefix = prefixersInGUI[i].parentPrefix;
+                if (name === '' || uri === '') {
+                    alertInterface('Name or URI of a prefix empty, ignoring...', '');
+                    continue;
+                }
 
-        newstring = regexes[0].replace('#"', ' (read-string "#\\"');
-        newstring = newstring.replace(/"$/, '\\"")');
-        codeToParse = codeToParse.replace(regexes[0], newstring);
-        regexes = regexesPattern.exec(codeToParse);
-      }
+                addGrafterPrefixer(name, uri, parentPrefix);
+            }
 
-      parseAndAddUserFunction(codeToParse);
+            // add prefixers for each graph
 
-    }
+            for (i = 0; i < transformation.graphs.length; ++i) {
+                addGrafterPrefixer('graph' + i, transformation.graphs[i].graphURI, '');
+            }
 
-    var grafterCustomFunctions = constructUserFunctions();
-    /* Graph Template */
+            var grafterPrefixers = constructGrafterPrefixersArray();
+            /* User functions */
 
-    var graphTemplate = constructRDFGraphFunction(transformation);
+            //    var customFunctionsMap = transformation.customFunctionDeclarations;
+            for (i = 0; i < transformation.customFunctionDeclarations.length; ++i) {
+                /*Regex parsing*/
+                var codeToParse = transformation.customFunctionDeclarations[i].clojureCode;
+                var regexesPattern = /#"(.*?)"/g;
 
-    /* Pipeline Function */
-    angular.forEach(transformation.pipelines, function(pipeline) {
-      angular.forEach(pipeline.functions, function(genericFunction) {
-        addPipelineFunction(genericFunction);
-      });
+                var regexes = regexesPattern.exec(codeToParse);
+                var newstring;
+                while (regexes) {
+
+                    newstring = regexes[0].replace('#"', ' (read-string "#\\"');
+                    newstring = newstring.replace(/"$/, '\\"")');
+                    codeToParse = codeToParse.replace(regexes[0], newstring);
+                    regexes = regexesPattern.exec(codeToParse);
+                }
+
+                parseAndAddUserFunction(codeToParse);
+
+            }
+
+            var grafterCustomFunctions = constructUserFunctions();
+            /* Graph Template */
+
+            var graphTemplate = constructRDFGraphFunction(transformation);
+
+            /* Pipeline Function */
+            angular.forEach(transformation.pipelines, function (pipeline) {
+                angular.forEach(pipeline.functions, function (genericFunction) {
+                    addPipelineFunction(genericFunction);
+                });
+            });
+
+            var resultingPipeline = constructPipeline();
+            var textStr = '';
+
+            if (grafterPrefixers.length) {
+                for (i = 0; i < grafterPrefixers.length; ++i) {
+                    textStr += (grafterPrefixers[i].ednEncode() + '\n');
+                }
+
+                textStr += '\n';
+            }
+
+            loadNamespaceMapping(transformation.rdfVocabs);
+            if (transformation.graphs.length > 0) {
+                for (i = 0; i < transformation.graphs.length; ++i) {
+                    if (transformation.graphs[i].graphRoots) {
+                        if (transformation.graphs[i].graphRoots.length > 0) {
+                            for (var j = 0; j < transformation.graphs[i].graphRoots.length; j++)
+                                textStr = getConcept(transformation.graphs[i].graphRoots[j], textStr, transformation.graphs[i],
+                                    prefixersInGUI);
+                        }
+                    }
+                }
+
+                textStr += getTypePrefixes();
+                textStr += '\n';
+            }
+
+            for (i = 0; i < grafterCustomFunctions.length; ++i) {
+                textStr += (grafterCustomFunctions[i].ednEncode() + '\n');
+            }
+
+            textStr += graphTemplate.ednEncode();
+
+            textStr += '\n';
+            textStr += '\n';
+            textStr += (resultingPipeline.ednEncode());
+
+            textStr += '\n';
+            textStr += '\n';
+
+            textStr +=
+                '(defgraft my-graft "Transformation that converts input CSV data into RDF graph data." my-pipe make-graph)';
+            return textStr;
+        }
+
+        this.fromTransformation = function (transformation, noOverride) {
+            try {
+                var generatedCode = generateGrafterCode(transformation);
+
+                return generatedCode;
+            } catch (e) {
+                Raven.captureException(e);
+                console.error(e);
+                // TODO print some error pls
+                return '';
+            }
+        };
+
     });
-
-    var resultingPipeline = constructPipeline();
-    var textStr = '';
-
-    if (grafterPrefixers.length) {
-      for (i = 0; i < grafterPrefixers.length; ++i) {
-        textStr += (grafterPrefixers[i].ednEncode() + '\n');
-      }
-
-      textStr += '\n';
-    }
-
-    loadNamespaceMapping(transformation.rdfVocabs);
-    if (transformation.graphs.length > 0) {
-      for (i = 0; i < transformation.graphs.length; ++i) {
-        if (transformation.graphs[i].graphRoots) {
-          if (transformation.graphs[i].graphRoots.length > 0) {
-            for (var j = 0; j < transformation.graphs[i].graphRoots.length; j++)
-              textStr = getConcept(transformation.graphs[i].graphRoots[j], textStr, transformation.graphs[i],
-                                   prefixersInGUI);
-          }
-        }
-      }
-
-      textStr += '\n';
-    }
-
-    for (i = 0; i < grafterCustomFunctions.length; ++i) {
-      textStr += (grafterCustomFunctions[i].ednEncode() + '\n');
-    }
-
-    textStr += graphTemplate.ednEncode();
-
-    textStr += '\n';
-    textStr += '\n';
-    textStr += (resultingPipeline.ednEncode());
-
-    textStr += '\n';
-    textStr += '\n';
-
-    textStr +=
-      '(defgraft my-graft "Transformation that converts input CSV data into RDF graph data." my-pipe make-graph)';
-    return textStr;
-  }
-
-  this.fromTransformation = function(transformation, noOverride) {
-    try {
-      var generatedCode = generateGrafterCode(transformation);
-
-      return generatedCode;
-    } catch (e) {
-      Raven.captureException(e);
-      console.error(e);
-      // TODO print some error pls
-      return '';
-    }
-  };
-
-});

@@ -86,6 +86,7 @@ angular.module('grafterizerApp')
         }
 
         scope.clickAddNodeAfter = function(node) {
+          
           var newScope = scope.$new(false, scope);
           newScope.isCreate = true;
           newScope.parentNode = scope.parent;

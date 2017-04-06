@@ -234,13 +234,16 @@ angular.module('grafterizerApp')
   $rootScope.readonlymode = true;
 
   backendService.transformation(publisher, id).success(function(data) {
+      console.log(data['dcat:public']);
     $scope.loading = false;
     $rootScope.readonlymode = $state.is('transformations.readonly');
     $scope.document = data;
     $scope.document.title = data['dct:title'];
     $scope.document.description = data['dct:description'];
     $scope.document.keywords = data['dcat:keyword'];
-
+      /******/
+    $scope.document.public=data['dcat:public'];
+      /*****/
     if (!$scope.document.keywords ||
         typeof $scope.document.keywords.length === 'undefined') {
       $scope.document.keywords = [];
@@ -415,7 +418,8 @@ angular.module('grafterizerApp')
                                           // Base information
                                           {
         name: $scope.document.title,
-        public: $scope.document['dct:public'] ? 'true' : 'false'
+       /* public: $scope.document['dct:public'] ? 'true' : 'false'*/
+          public: $scope.document.public ? 'true' : 'false'
       },
                                           // Extra metadata
                                           {

@@ -27,7 +27,10 @@
           </div>
           <!-- </md-input-container> -->
           <div layout="row">
-            <md-switch aria-label="Expose as public" ng-model="document['dct:public']" ng-disabled="readonlymode" flex>
+            <!--md-switch aria-label="Expose as public" ng-model="document['dct:public']" ng-disabled="readonlymode" flex>
+              Expose as public
+            </md-switch-->
+               <md-switch aria-label="Expose as public" ng-model="document.public" ng-disabled="readonlymode" flex>
               Expose as public
             </md-switch>
             <p flex ng-show="document['dct:publisher']">

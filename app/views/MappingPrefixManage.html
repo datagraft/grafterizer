@@ -85,7 +85,7 @@
 
       <div class="modal-content animate-switch" ng-switch-when="addVocabDialog">
         <form name="graphsForm">
-          <md-input-container>
+          <md-input-container class="md-block" >
             <label>Prefix</label>
             <input type="text" class="form-control" ng-model="vocabName" name="prefix" required
                    pattern="^[^:]+$"/>
@@ -96,7 +96,7 @@
 
           </md-input-container>
 
-          <md-input-container>
+          <md-input-container class="md-block" >
             <label>Namespace URI</label>
             <input type="text" ng-disabled="namespaceInputDisable" ng-model="vocabNamespace" name="namespace"
                    required pattern="[A-Za-z][A-Za-z0-9\+\.\-]*:([A-Za-z0-9\.\-_~:/\?#\[\]@!\$&'\(\)\*\+,;=]|%[A-Fa-f0-9]{2})+"/>
@@ -122,7 +122,7 @@
 
           <md-progress-linear md-mode="indeterminate" ng-show="dragProcess"></md-progress-linear>
 
-          <md-input-container ng-show="remotePath">
+          <md-input-container ng-show="remotePath" class="md-block" >
             <label>Remote Path</label>
             <input type="text" ng-model="vocabLoc"/>
           </md-input-container>

@@ -45,6 +45,7 @@ angular.module('grafterizerApp')
         };
 
         scope.clickAddChildProperty = function() {
+            
           scope.originalProperties = [];
           angular.copy(scope.node.subElements, scope.originalProperties);
           var newScope = scope.$new(false, scope);
@@ -58,13 +59,19 @@ angular.module('grafterizerApp')
           }).then(
             function(propertyNode) {
               if (propertyNode) {
+                  if (scope.parent.__type=== 'Graph') {
                 scope.node.addNodeAfter(null, propertyNode);
+              }
+                  else 
+                 scope.node.addNodeAfter(null, propertyNode,true);
               }
             },
 
             function() {
               angular.copy(scope.originalProperties, scope.node.subElements);
             });
+            
+            
         };
       });
     }

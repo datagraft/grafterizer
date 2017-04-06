@@ -26,7 +26,12 @@ angular.module('grafterizerApp')
             scope: newScope,
             clickOutsideToClose: true
           }).then(function(propertyNode) {
-            scope.parent.addNodeAfter(property, propertyNode);
+              
+              
+              if (scope.parent.subElements[0].isNested)
+                scope.parent.addNodeAfter(property, propertyNode, true);
+              else
+                scope.parent.addNodeAfter(property, propertyNode, false);
           });
         };
       }

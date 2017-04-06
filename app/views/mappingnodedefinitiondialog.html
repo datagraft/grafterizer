@@ -34,6 +34,10 @@
               <oi-select ng-show="!$root.colnames()" oi-options="column.value for column in []" oi-select-options="{newItem: true, newItemFn: 'addColumn($query)'}" ng-model="nodeCurrentState.column" ng-disabled="$root.readonlymode"></oi-select>
               <!--input ng-model="nodeCurrentState.column" type="text"-->
             </md-input-container>
+<md-input-container flex ng-if="dialogState.mappingType=='dataset-col' ">
+              <label>rdf:type</label>
+              <input ng-model="nodeCurrentState.rdfType" type="text">
+            </md-input-container>
 
 
             <div class="modal-dialog animate-switch-container" ng-switch on="selection" ng-if="dialogState.mappingType=='free-defined'">
@@ -51,6 +55,11 @@
                     <md-button aria-label='search' class="md-icon-button fa fa-search" ng-click="search(propertyValue.value)"></md-button>
                   </div>
                 </form>
+                  <md-input-container class="md-block" flex ng-if="dialogState.mappingType=='free-defined' ">
+              <label>rdf:type</label>
+              <input ng-model="nodeCurrentState.rdfType" type="text">
+            </md-input-container>
+
                 <h5 align="center" ng-show="showSearchEmptyResult">No matched result</h5>
                 <div ng-show="showSearchResult" >
                   <md-list>
@@ -112,7 +121,7 @@
               <md-option value="dataset-col">From dataset column</md-option>
               <md-option value="free-defined">Free-defined text</md-option>
             </md-select>
-            <md-input-container flex ng-if="dialogState.mappingType=='free-defined'">
+            <md-input-container class="md-block" flex ng-if="dialogState.mappingType=='free-defined'">
               <label>Literal value</label>
               <input ng-model="nodeCurrentState.literalValue" type="text">
             </md-input-container>

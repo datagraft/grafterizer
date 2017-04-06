@@ -4,12 +4,17 @@
         <div layout="column">
     <label>Function to use in a pipeline</label>
         <md-input-container> 
-        <md-select ng-model="function.functionName" placeholder="{{function.functionName ? function.functionName.name : 'Choose a function...'}}" ng-selected="function.functionName" ng-disabled="$root.readonlymode">
+        <!--md-select ng-model="function.functionName" placeholder="{{function.functionName ? function.functionName.name : 'Choose a function...'}}" ng-selected="function.functionName" ng-disabled="$root.readonlymode">
                     <md-optgroup label="Custom functions">
                     <md-option ng-repeat="customFunct in transformation.customFunctionDeclarations | filter: {group: 'UTILITY'}" title = "{{customFunct.docstring}}" value="{{customFunct.name}}">{{customFunct.name}}</md-option>
                     </md-optgroup>
-                </md-select>
+                </md-select-->
+             <oi-select oi-options="customFunction.name group by customFunction.group for customFunction in  getCustomFunctions() track by customFunction.id" title="customFunction.docstring" ng-model="function.functionName" ng-disabled="$root.readonlymode"></oi-select>
             </md-input-container>
+             <md-input-container  ng-repeat="param in function.functionName.getParams() track by $index">
+            <label>{{param}}</label>
+            <input ng-model = "function.params[$index]">
+          </md-input-container> 
     <md-input-container class="md-block" flex>
         <label>Comment</label>
 
