@@ -115,6 +115,7 @@ angular.module('grafterizerApp')
   this.SplitFunction = SplitFunction;
 
   var UtilityFunction = function(functionName, docstring) {
+      
     GenericFunction.call(this);
       if (functionName !== null) {
       
@@ -126,24 +127,46 @@ angular.module('grafterizerApp')
       
       }
     this.functionName = functionName;
-    this.params = params;
+ 
     if ((!docstring) && functionName) this.docstring = 'Apply ' + functionName.name + ' to dataset';
     else this.docstring = docstring;
     this.name = 'utility';
-    if (functionName) this.displayName = functionName.name;
+      console.log(functionName);
+    if (functionName.funct) this.displayName = functionName.funct.name;
     this.__type = 'UtilityFunction';
   };
   UtilityFunction.revive = function(data) {
-    return new UtilityFunction(data.functionName, data.params, data.docstring);
+      var newFunct = data.functionName;
+      if (data.functionName instanceof FunctionWithArgs === false) {
+      
+          if (data.functionsToDeriveWith[i].__type === 'FunctionWithArgs') {
+
+          newFunct = FunctionWithArgs.revive(data.functionName);
+          
+        }
+        else {
+          newFunct = {name:data.functionName.name,
+                      id:0,
+                      group:(data.functionName.hasOwnProperty('group')?data.functionName.group:'CUSTOM')};
+
+          //               var newFunct = new FunctionWithArgs({funct:data.functionsToDeriveWith[i],functParams:[]});
+          
+        }
+          
+      }
+    return new UtilityFunction(newFunct,data.docstring);
   };
   UtilityFunction.prototype = Object.create(GenericFunction.prototype);
   UtilityFunction.prototype.generateClojure = function() {
-      var elems = [jsedn.sym(this.functionName.name)];
-      for (var i = 0; i< this.params.length; ++i) 
+            
+      var elems = [jsedn.sym(this.functionName.funct.name)];
+    
+      for (var i = 0; i< this.functionName.functParams.length; ++i) 
           {
-              elems.push(jsedn.sym.params);
+             console.log(this.functionName.functParams[i]); elems.push(this.functionName.functParams[i]);
+             
           }
-          
+     
     return new jsedn.List(elems);
   };
   this.UtilityFunction = UtilityFunction;
@@ -1323,13 +1346,14 @@ angular.module('grafterizerApp')
 
     var i;
     var colNamesClj = new jsedn.Vector([]);
-    if (!(this.indexFrom || this.indexTo)) {
+    if (this.indexFrom === null || this.indexTo===null) {
       for (i = 0; i < this.columnsArray.length; ++i) {
         colNamesClj.val.push(new jsedn.kw(':' + this.columnsArray[i].value));
       }
 
       return new jsedn.List([jsedn.sym((this.take ? 'columns' : 'new-tabular/remove-columns')), colNamesClj]);
     } else {
+     
       return this.take? new jsedn.List([jsedn.sym('columns'),
                                         new jsedn.List([jsedn.sym('range'), this.indexFrom, this.indexTo+1])]) :
       new jsedn.List([jsedn.sym('new-tabular/remove-columns'),

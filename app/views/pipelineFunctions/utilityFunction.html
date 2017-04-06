@@ -9,12 +9,14 @@
                     <md-option ng-repeat="customFunct in transformation.customFunctionDeclarations | filter: {group: 'UTILITY'}" title = "{{customFunct.docstring}}" value="{{customFunct.name}}">{{customFunct.name}}</md-option>
                     </md-optgroup>
                 </md-select-->
-             <oi-select oi-options="customFunction.name group by customFunction.group for customFunction in  getCustomFunctions() track by customFunction.id" title="customFunction.docstring" ng-model="function.functionName" ng-disabled="$root.readonlymode"></oi-select>
+             <oi-select oi-options="customFunction.name group by customFunction.group for customFunction in  getCustomFunctions() track by customFunction.id" title="customFunction.docstring" ng-model="function.functionName.funct" ng-disabled="$root.readonlymode"></oi-select>
             </md-input-container>
-             <md-input-container  ng-repeat="param in function.functionName.getParams() track by $index">
+             <div layout = "row" ng-repeat ="param in function.functionName.getParams() track by $index">
+             <md-input-container  >
             <label>{{param}}</label>
-            <input ng-model = "function.params[$index]">
+            <input ng-model = "function.functionName.functParams[$index]">
           </md-input-container> 
+                 </div>
     <md-input-container class="md-block" flex>
         <label>Comment</label>
 

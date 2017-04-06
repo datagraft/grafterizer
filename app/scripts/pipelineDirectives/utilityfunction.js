@@ -20,13 +20,16 @@ angular.module('grafterizerApp')
           scope.function = new transformationDataModel.UtilityFunction(utilFunct, null);
           scope.function.docstring = null;
         }
-        if (scope.function.functionName) console.log(scope.function.functionName.getParams());
+        
         scope.$parent.generateCurrFunction = function() {
           // TODO fix selected function bug
-             if (scope.function.functionName) console.log(scope.function.functionName.getParams());
-          var   func = scope.$parent.transformation.findPrefixerOrCustomFunctionByName(scope.function.functionName);
+        
+        /*  var   func = scope.$parent.transformation.findPrefixerOrCustomFunctionByName(scope.function.functionName);
+            console.log(func);*/
+           
+           
           return new transformationDataModel.UtilityFunction(
-            func,
+            scope.function.functionName,
             scope.function.docstring);
         };
 
@@ -46,9 +49,7 @@ angular.module('grafterizerApp')
         return customFunctions;
       };
            
-       scope.$watch('function.functionName', function(value) {
-          if (value) console.log(value);
-       });    
+      
        
       }
     };
