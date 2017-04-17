@@ -10,85 +10,85 @@
 angular.module('grafterizerApp')
   .controller('InputFormatterControler', function ($scope, uploadFile, $mdDialog, transformationDataModel,$state, $rootScope, callback) {
 
-if ($rootScope.previewmode === undefined)  $rootScope.previewmode = false;
-      $scope.typeList = ["CSV", "Excel", "Shape"/*, "JSON"*/];
+  if ($rootScope.previewmode === undefined)  $rootScope.previewmode = false;
+  $scope.typeList = ["CSV", "Excel", "Shape"/*, "JSON"*/];
 
-      $scope.selectedType = getFileType($scope.$parent.fileUpload);
+  $scope.selectedType = getFileType($scope.$parent.fileUpload);
+  $scope.delimiter = ',';
 
-      $scope.delimiter = ',';
+  // uploads files according to given inputs
+  $scope.uploadSelected = function () {
+    // always the first step is read dataset
+    var uploadFunction = new transformationDataModel.UploadDatasetFunction(
+      $scope.selectedType,
+      $scope.typeList,
+      $scope.delimiter,
+      $scope.sheetNames,
+      $scope.selectedSheet,
+      $scope.extension,
+      'Reads the input data for the data transformation. \n Cannot be moved or removed');
+    if ($scope.transformation.pipelines[0].functions.length !==0 && $scope.transformation.pipelines[0].functions[0].__type !== "UploadDatasetFunction" ) {
+      $scope.transformation.pipelines[0].functions.splice(0,0,uploadFunction);
+    } else {
+      $scope.transformation.pipelines[0].functions[0] // always the first step is read dataset
+        = uploadFunction;
+    }
 
-      // uploads files according to given inputs
-      $scope.uploadSelected = function () {
-          // always the first step is read dataset
-          var uploadFunction = new transformationDataModel.UploadDatasetFunction(
-            $scope.selectedType,
-            $scope.typeList,
-            $scope.delimiter,
-            $scope.sheetNames,
-            $scope.selectedSheet,
-            $scope.extension,
-            'Reads the input data for the data transformation. \n Cannot be moved or removed');
-          if  ($scope.transformation.pipelines[0].functions.length!==0 && $scope.transformation.pipelines[0].functions[0].__type !== "UploadDatasetFunction" )
-              {$scope.transformation.pipelines[0].functions.splice(0,0,uploadFunction);}
-          else
-           {
-          $scope.transformation.pipelines[0].functions[0] // always the first step is read dataset
-          =uploadFunction;
-          }
-         
-          
-        $rootScope.transformation = $scope.transformation;
-        uploadProcessedFile($scope.$parent.fileUpload);
-             $rootScope.previewmode = true;
-        $mdDialog.hide();
-      };
 
-      //uploads file and redirects to preview service
-      var uploadProcessedFile = function (file_upload) {
-        uploadFile.upload(file_upload, callback);
-      };
+    $rootScope.transformation = $scope.transformation;
+    uploadProcessedFile($scope.$parent.fileUpload);
+    $rootScope.previewmode = true;
+    $mdDialog.hide();
+  };
 
-      // infers file type from the file format extension
-      function infer_type(file_name) {
-        return file_name.substring(file_name.lastIndexOf(".") + 1, file_name.length);
-      }
+  //uploads file and redirects to preview service
+  var uploadProcessedFile = function (file_upload) {
+    uploadFile.upload(file_upload, callback);
+  };
 
-      // identifies file type and sheet to process with user input
-      function getFileType(file) {
-        $scope.extension = infer_type(file.name);
-        switch ($scope.extension) {
-          case 'csv':
-          case 'txt':
-          case 'tsv':
-            return "CSV";
-            break;
-          case 'xls':
-          case 'xlsx':
-            getSheets(file);
-            return "Excel";
-            break;
-          case 'zip':
-            return "Shape"
-            break;
-          case 'json':
-            return "JSON";
-            break;
-        }
-      }
+  // infers file type from the file format extension
+  function infer_type(file_name) {
+    return file_name.substring(file_name.lastIndexOf(".") + 1, file_name.length);
+  }
 
-      // loads available sheets in the file and gets selected sheet name by user
-      function getSheets(file) {
-        var reader = new FileReader();
-        var ex = reader.readAsBinaryString(file);
-        reader.onload = function (e) {
-          var data = e.target.result;
-            console.log("beforeRead");
-          $scope.workbook = XLSX.read(data, {type: 'binary'});
-          $scope.sheetNames = $scope.workbook.SheetNames;
-          $scope.selectedSheet = $scope.sheetNames[0];
-        };
-      }
-     }
-  );
+  // identifies file type and sheet to process with user input
+  function getFileType(file) {
+    $scope.extension = infer_type(file.name);
+    switch ($scope.extension) {
+      case 'csv':
+      case 'txt':
+      case 'tsv':
+        return "CSV";
+        break;
+      case 'xls':
+      case 'xlsx':
+        getSheets(file);
+        return "Excel";
+        break;
+      case 'zip':
+        return "Shape"
+        break;
+      case 'json':
+        return "JSON";
+        break;
+      default: 
+        return "CSV";
+        break;
+                            }
+  }
+
+  // loads available sheets in the file and gets selected sheet name by user
+  function getSheets(file) {
+    var reader = new FileReader();
+    var ex = reader.readAsBinaryString(file);
+    reader.onload = function (e) {
+      var data = e.target.result;
+      console.log("beforeRead");
+      $scope.workbook = XLSX.read(data, {type: 'binary'});
+      $scope.sheetNames = $scope.workbook.SheetNames;
+      $scope.selectedSheet = $scope.sheetNames[0];
+    };
+  };
+});
 
 

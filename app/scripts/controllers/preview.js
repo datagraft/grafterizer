@@ -8,36 +8,35 @@
  * Controller of the grafterizerApp
  */
 angular.module('grafterizerApp')
-.controller('PreviewCtrl', function(
-            $scope,
-            PipeService,
-            $timeout,
-            $rootScope,
-            $stateParams,
-            generateClojure,
-            $mdToast,
-            $mdDialog,
-            transformationDataModel,
-            datagraftPostMessage) {
-  
+  .controller('PreviewCtrl', function(
+              $scope,
+               PipeService,
+               $timeout,
+               $rootScope,
+               $stateParams,
+               generateClojure,
+               $mdToast,
+               $mdDialog,
+               transformationDataModel,
+               datagraftPostMessage) {
 
-  $scope.developmentMode = !!window.location.port;     
+
+  $scope.developmentMode = !!window.location.port;
   var paginationSize = 100;
 
   $scope.$on('$stateChangeSuccess', function(event, toState, toParams, fromState, fromParams){
-     
+
     $scope.pathBack = toParams.path_back;
-      
-  
-    if(toParams.distributionId  ){
-     $scope.$parent.showPreview = $rootScope.previewmode; 
-         } else {
+
+
+    if(toParams.distributionId){
+      $scope.$parent.showPreview = $rootScope.previewmode; 
+    } else {
       $scope.$parent.showPreview = false;
       $rootScope.previewmode = false;
     }
-      
   });
-  
+
   $scope.livePreview = !(window.sessionStorage && window.sessionStorage.livePreview === 'false');
   $scope.selectedTabIndex = 0;
 
@@ -54,9 +53,9 @@ angular.module('grafterizerApp')
   var savedGeneratedClojure;
   var currentPreviewPage = 0;
   var previewTransformation = function() {
-//    var clojure = generateClojure.fromTransformation($scope.$parent.transformation);
+    //    var clojure = generateClojure.fromTransformation($scope.$parent.transformation);
     // TODO not sure this works properly - need to clarify the way the throttle passes arguments
-    
+
     var clojure = $rootScope.previewedClojure ? $rootScope.previewedClojure : generateClojure.fromTransformation($scope.$parent.transformation);
     $scope.totalNumberOfCalls++;
     savedGeneratedClojure = clojure;
@@ -68,9 +67,7 @@ angular.module('grafterizerApp')
       .then(function(data) {
       delete $scope.graftwerkException;
       $scope.data = data;
-    },
-
-    function(data) {
+    }, function(data) {
       if (data) {
         if (data.edn && data.edn[':message']) {
           $scope.graftwerkException = data.edn[':message'];
@@ -83,9 +80,9 @@ angular.module('grafterizerApp')
         if ($scope.graftwerkException.match(/(out of memory|timed out)/i)) {
           $mdDialog.show(
             $mdDialog.alert()
-              .title($scope.graftwerkException)
-              .content('The provided input file could not be transformed with the specified transformation due to an exceeded processing quota. We are aware of the limitation and will be extending the quotas in the near future.')
-              .ok('Ok')
+            .title($scope.graftwerkException)
+            .content('The provided input file could not be transformed with the specified transformation due to an exceeded processing quota. We are aware of the limitation and will be extending the quotas in the near future.')
+            .ok('Ok')
           );
         }
 
@@ -118,7 +115,6 @@ angular.module('grafterizerApp')
       window.sessionStorage.livePreview = $scope.livePreview ? 'true' : 'false';
     });
   }
-
 
   $scope.$watch('livePreview', function(newValue, oldValue) {
     if (newValue === true && oldValue === false) {
@@ -155,35 +151,24 @@ angular.module('grafterizerApp')
   });
 
   var currentOriginalPage = 0;
-  /*$scope.loadOriginalData = function() {
-    if ($scope.originalData) return;
-
+  $scope.loadOriginalData = function () {
+    var uploadDatasetFunction = _.get($scope.$parent.transformation, 'pipelines[0].functions[0]'); // original data is created out of read-dataset
+    if (!uploadDatasetFunction) return;
+    var clojure = '(def make-graph (graph-fn [{:keys []}])) (defpipe my-pipe [data-file] (-> ' + uploadDatasetFunction.generateClojure().ednEncode() + '))';
     if ($scope.selectedDistribution) {
-      PipeService.original($scope.selectedDistribution, 0, paginationSize)
-        .then(function(data) {
+      PipeService.preview($scope.selectedDistribution, clojure, 0, paginationSize)
+        .then(function (data) {
         $scope.originalData = data;
       });
     }
   };
-    */
-        $scope.loadOriginalData = function () {
-            var uploadDatasetFunction = _.get($scope.$parent.transformation, 'pipelines[0].functions[0]'); // original data is created out of read-dataset
-          if (!uploadDatasetFunction) return;
-          var clojure = '(def make-graph (graph-fn [{:keys []}])) (defpipe my-pipe [data-file] (-> ' + uploadDatasetFunction.generateClojure().ednEncode() + '))';
-          if ($scope.selectedDistribution) {
-            PipeService.preview($scope.selectedDistribution, clojure, 0, paginationSize)
-              .then(function (data) {
-                $scope.originalData = data;
-              });
-          }
-        };
 
- /* $scope.loadMorePreview = function(callback) {
+  $scope.loadMorePreview = function (callback) {
     if (!savedGeneratedClojure) return;
-    PipeService.preview($scope.selectedDistribution,
-                        savedGeneratedClojure,
-                        ++currentPreviewPage, paginationSize)
-      .then(function(data) {
+    PipeService.preview($scope.selectedDistribution
+                        , savedGeneratedClojure
+                        , ++currentPreviewPage, paginationSize)
+      .then(function (data) {
       if ($scope.data && $scope.data.edn && data && data.edn) {
         callback(undefined, data.edn);
       } else {
@@ -191,62 +176,29 @@ angular.module('grafterizerApp')
       }
     },
 
-    function() {
+            function () {
       callback(true);
     });
-  };*/
-     $scope.loadMorePreview = function (callback) {
-            if (!savedGeneratedClojure) return;
-            PipeService.preview($scope.selectedDistribution
-                    , savedGeneratedClojure
-                    , ++currentPreviewPage, paginationSize)
-                .then(function (data) {
-                        if ($scope.data && $scope.data.edn && data && data.edn) {
-                            callback(undefined, data.edn);
-                        } else {
-                            callback(true);
-                        }
-                    },
+  };
 
-                    function () {
-                        callback(true);
-                    });
-        };
-    
- /* $scope.loadMoreOriginal = function(callback) {
+  $scope.loadMoreOriginal = function (callback) {
     if ($scope.selectedDistribution) {
-      PipeService.original($scope.selectedDistribution, ++currentOriginalPage, paginationSize)
-        .then(function(data) {
+      var uploadDatasetFunction = _.get($scope.$parent.transformation, 'pipelines[0].functions[0]'); // original data is created out of read-dataset
+      if (!uploadDatasetFunction) return;
+      var clojure = '(def make-graph (graph-fn [{:keys []}])) (defpipe my-pipe [data-file] (-> ' + uploadDatasetFunction.generateClojure().ednEncode() + '))';
+      PipeService.preview($scope.selectedDistribution, clojure, ++currentOriginalPage, paginationSize)
+        .then(function (data) {
         if (data && data.edn) {
           callback(undefined, data.edn);
         } else {
           callback(true);
         }
       },
-
-      function() {
+              function () {
         callback(true);
       });
     }
-  };*/
-            $scope.loadMoreOriginal = function (callback) {
-          if ($scope.selectedDistribution) {
-            var uploadDatasetFunction = _.get($scope.$parent.transformation, 'pipelines[0].functions[0]'); // original data is created out of read-dataset
-            if (!uploadDatasetFunction) return;
-            var clojure = '(def make-graph (graph-fn [{:keys []}])) (defpipe my-pipe [data-file] (-> ' + uploadDatasetFunction.generateClojure().ednEncode() + '))';
-            PipeService.preview($scope.selectedDistribution, clojure, ++currentOriginalPage, paginationSize)
-              .then(function (data) {
-                  if (data && data.edn) {
-                    callback(undefined, data.edn);
-                  } else {
-                    callback(true);
-                  }
-                },
-                function () {
-                  callback(true);
-                });
-          }
-        };
+  };
 
 
   // If it's an upwizards distribution, it means grafterizer is used
@@ -272,11 +224,11 @@ angular.module('grafterizerApp')
         clickOutsideToClose: true
       });
     };
-    
+
     $scope.previousWizardStep = function() {
       datagraftPostMessage.setLocation($scope.pathBack);
     };
-    
+
     $scope.download = function() {
       $rootScope.actions.download();
     };
@@ -286,4 +238,4 @@ angular.module('grafterizerApp')
   }
 
 
-    });
+});
