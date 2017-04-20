@@ -155,18 +155,15 @@ angular.module('grafterizerApp')
     this.__type = 'UtilityFunction';
   };
   UtilityFunction.revive = function(data) {
-    return new UtilityFunction(data.functionName, data.params, data.docstring);
+   // return new UtilityFunction(data.functionName, data.params, data.docstring);
     var newFunct = data.functionName;    
     if (data.functionName instanceof FunctionWithArgs === false) {
-      if (data.functionsToDeriveWith[i].__type === 'FunctionWithArgs') {
+      if (data.functionName.__type === 'FunctionWithArgs') {
         newFunct = FunctionWithArgs.revive(data.functionName);
       }
       else {
-        newFunct = {
-          name: data.functionName.name,
-          id: 0,
-          group: (data.functionName.hasOwnProperty('group') ? data.functionName.group : 'CUSTOM')
-        };
+        
+          newFunct = FunctionWithArgs (data.functionName,[]);
       }
 
     }
