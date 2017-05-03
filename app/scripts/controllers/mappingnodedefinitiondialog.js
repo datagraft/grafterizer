@@ -17,7 +17,6 @@ angular.module('grafterizerApp')
                leObject,
                $rootScope,
                $mdToast) {
-
   var connection = leObject.serveraddress;
   $scope.dialogState = {};
   $scope.dialogState.selectedTab = 0;
