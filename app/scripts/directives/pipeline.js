@@ -17,17 +17,33 @@ angular.module('grafterizerApp')
       transformation: '='
     },
     link: function postLink(scope, element, attrs) {
-      // if (!scope.pipeline) {
-      //scope.pipeline = new transformationDataModel.Pipeline([]);
-      // }
+   scope.functionFabs = [];
+
+        if (scope.pipeline) {
+            for (var i = 0; i< scope.pipeline.functions.length; ++i)
+                scope.functionFabs.push(false);
+        }
+  
+        scope.findFunctionNum = function(funct)
+        {
+            var i;
+            for (i = 0; i< scope.pipeline.functions.length; ++i)
+                if (scope.pipeline.functions[i] === funct)
+                    return i;
+            return i;
+        }       
+      /* if (!scope.pipeline) {
+      scope.pipeline = new transformationDataModel.Pipeline([]);
+       }*/
+         
+     
       scope.hideUploadDatasetFunction = function(funct)
       {
         return funct.name =="upload-dataset" ? true : false;
       }
-      scope.onFunctionHover = function (funct) {
-          funct.fabIsOpen=true;
-      }
+  
       scope.clickAddAfter = function(funct) {
+         
         var newScope = scope.$new(false, scope);
         newScope.transformation = scope.transformation;
         $mdDialog.show({
@@ -36,6 +52,8 @@ angular.module('grafterizerApp')
           clickOutsideToClose: true
         }).then(function(pipeFunct) {
           if (pipeFunct) {
+               scope.functionFabs.splice(scope.findFunctionNum(funct) + 1, 0, false);
+         
             scope.pipeline.addAfter(funct, pipeFunct);
             angular.forEach(scope.pipeline.functions, function(f) {
               f.fabIsOpen = false;
@@ -72,6 +90,8 @@ angular.module('grafterizerApp')
           .ok('Yes')
           .cancel('Cancel'))
           .then(function() {
+             scope.functionFabs.splice(scope.findFunctionNum(funct) , 1);
+         
           if (funct.isPreviewed) {
             $rootScope.currentlyPreviewedFunction = {};
             $rootScope.previewedClojure = generateClojure.fromTransformation(scope.transformation);
@@ -115,6 +135,8 @@ angular.module('grafterizerApp')
         $rootScope.previewedClojure = generateClojure.fromTransformation(scope.transformation);
       };
 
+        
+        
       scope.previousFunct = null;
 
       scope.toggleFabStates = function(funct) {

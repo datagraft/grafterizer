@@ -234,7 +234,6 @@ angular.module('grafterizerApp')
   $rootScope.readonlymode = true;
 
   backendService.transformation(publisher, id).success(function(data) {
-      console.log(data['dcat:public']);
     $scope.loading = false;
     $rootScope.readonlymode = $state.is('transformations.readonly');
     $scope.document = data;
