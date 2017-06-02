@@ -163,7 +163,7 @@ angular.module('grafterizerApp')
       }
       else {
         
-          newFunct = FunctionWithArgs (data.functionName,[]);
+          newFunct = new FunctionWithArgs (data.functionName,[]);
       }
 
     }
